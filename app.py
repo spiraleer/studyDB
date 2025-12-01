@@ -1,13 +1,14 @@
-# app.py
+# app.py (обновляем health эндпоинт и добавляем импорты)
 import os
 from fastapi import FastAPI, Request, Depends
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy.orm import Session
 from dotenv import load_dotenv
-import os
+
+# Импортируем функции для работы с БД
+from models.database import check_database_connection, get_db
 
 # Загружаем переменные окружения из .env файла
 load_dotenv()
@@ -41,10 +42,6 @@ templates = Jinja2Templates(directory="templates")
 # Подключаем статические файлы (если будут CSS/JS)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# Импортируем модели и зависимости (позже добавим)
-# from models.database import get_db
-# from models.tables import ...
-
 # Главная страница
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
@@ -60,18 +57,30 @@ async def health_check():
     Проверка состояния приложения и подключения к БД.
     """
     try:
-        # Здесь позже добавим проверку подключения к БД
+        # Проверяем подключение к БД
+        db_status = check_database_connection()
+        
+        # Общий статус приложения
+        app_healthy = db_status["connected"]
+        
         return {
-            "status": "healthy",
+            "status": "healthy" if app_healthy else "unhealthy",
             "service": "Warehouse Management System",
             "version": "1.0.0",
-            "environment": os.getenv("ENVIRONMENT", "development")
+            "environment": os.getenv("ENVIRONMENT", "development"),
+            "database": db_status,
+            "timestamp": os.path.getmtime(__file__) if os.path.exists(__file__) else None
         }
     except Exception as e:
-        return {
-            "status": "unhealthy",
-            "error": str(e)
-        }
+        return JSONResponse(
+            status_code=500,
+            content={
+                "status": "error",
+                "service": "Warehouse Management System",
+                "error": str(e),
+                "timestamp": os.path.getmtime(__file__) if os.path.exists(__file__) else None
+            }
+        )
 
 # Эндпоинт для информации о конфигурации (только для разработки)
 @app.get("/api/config")
@@ -94,16 +103,17 @@ async def get_config():
         "environment": os.getenv("ENVIRONMENT"),
         "debug": os.getenv("DEBUG"),
         "database_url": masked_url,
-        "token_expire_minutes": os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
+        "token_expire_minutes": os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"),
+        "algorithm": os.getenv("ALGORITHM")
     }
 
-# Импортируем маршруты (позже добавим)
-# from routes.auth import router as auth_router
-# from routes.dashboard import router as dashboard_router
-
-# Подключаем маршруты
-# app.include_router(auth_router, prefix="/api/auth", tags=["auth"])
-# app.include_router(dashboard_router, prefix="/api/dashboard", tags=["dashboard"])
+# Эндпоинт для проверки только базы данных
+@app.get("/api/db-check")
+async def db_check():
+    """
+    Проверка подключения к базе данных.
+    """
+    return check_database_connection()
 
 # Обработчик 404 ошибки
 @app.exception_handler(404)
@@ -111,7 +121,20 @@ async def not_found_exception_handler(request: Request, exc):
     """
     Обработчик для 404 ошибок.
     """
-    return templates.TemplateResponse("404.html", {"request": request}, status_code=404)
+    return templates.TemplateResponse(
+        "404.html", 
+        {"request": request, "error": "Страница не найдена"}, 
+        status_code=404
+    )
+
+# Заглушка для 404 страницы (создадим позже)
+@app.get("/404")
+async def test_404(request: Request):
+    return templates.TemplateResponse(
+        "404.html", 
+        {"request": request, "error": "Тестовая 404 ошибка"}, 
+        status_code=404
+    )
 
 if __name__ == "__main__":
     import uvicorn
