@@ -1,5 +1,3 @@
-CREATE DATABASE grocery_store;
-
 -- 1. Таблица категорий товаров
 CREATE TABLE Category (
     category_id SERIAL PRIMARY KEY,
