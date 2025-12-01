@@ -6,9 +6,11 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
+from sqlalchemy import inspect
 
 # Импортируем функции для работы с БД
-from models.database import check_database_connection, get_db
+from models.database import check_database_connection, get_db, create_tables, engine
+from models.tables import Base
 
 # Загружаем переменные окружения из .env файла
 load_dotenv()
@@ -114,6 +116,46 @@ async def db_check():
     Проверка подключения к базе данных.
     """
     return check_database_connection()
+
+# Эндпоинт для создания таблиц (ТОЛЬКО ДЛЯ РАЗРАБОТКИ!)
+@app.get("/api/init-db")
+async def init_database():
+    """
+    Создает таблицы в базе данных.
+    ВНИМАНИЕ: Использовать только при первом запуске или в разработке!
+    """
+    if os.getenv("ENVIRONMENT") != "development":
+        return {"error": "Эта функция доступна только в режиме разработки"}
+    
+    result = create_tables()
+    return result
+
+# Эндпоинт для проверки существования таблиц
+@app.get("/api/check-tables")
+async def check_tables():
+    """
+    Проверяет какие таблицы существуют в базе данных.
+    """
+    inspector = inspect(engine)
+    tables = inspector.get_table_names()
+    
+    # Проверяем наличие основных таблиц
+    expected_tables = [
+        'role', 'employee', 'permission', 'role_permission',
+        'category', 'customer', 'supplier', 'product',
+        'orders', 'orders_item', 'payment', 'purchase',
+        'purchase_item', 'price_history', 'stock_movement',
+        'audit_log', 'user_session'
+    ]
+    
+    missing_tables = [table for table in expected_tables if table not in tables]
+    
+    return {
+        "total_tables": len(tables),
+        "existing_tables": tables,
+        "missing_tables": missing_tables,
+        "all_tables_exist": len(missing_tables) == 0
+    }
 
 # Обработчик 404 ошибки
 @app.exception_handler(404)
