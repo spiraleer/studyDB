@@ -1,8 +1,3 @@
-CREATE DATABASE grocery_store;
-
--- Подключаемся к БД
--- \c grocery_store;
-
 -- 1. Таблица ролей пользователей
 CREATE TABLE Role (
     role_id SERIAL PRIMARY KEY,
