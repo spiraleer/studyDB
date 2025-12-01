@@ -157,6 +157,14 @@ async def check_tables():
         "all_tables_exist": len(missing_tables) == 0
     }
 
+# Страница входа в систему
+@app.get("/login", response_class=HTMLResponse)
+async def login_page(request: Request):
+    """
+    Страница авторизации пользователей.
+    """
+    return templates.TemplateResponse("login.html", {"request": request})
+
 # Обработчик 404 ошибки
 @app.exception_handler(404)
 async def not_found_exception_handler(request: Request, exc):
