@@ -1,13 +1,13 @@
-# routes/dashboard.py (Реальный вывод данных таблицы)
+# routes/dashboard.py (С русскими названиями)
 from fastapi import APIRouter, Request, Depends, HTTPException, status
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
-from sqlalchemy import inspect, text
+from sqlalchemy import inspect
 from sqlalchemy.orm import Session
 from models.database import engine, get_db
-# Импортируем все модели из tables.py для динамического доступа
-import models.tables as tables 
-from models.tables import Base # Нужна для динамического доступа к моделям
+import models.tables as tables
+from models.tables import Base
+from core.mapping import get_russian_name # <--- ИМПОРТ ФУНКЦИИ ПЕРЕВОДА
 
 templates = Jinja2Templates(directory="templates")
 
@@ -16,10 +16,16 @@ router = APIRouter(
 )
 
 def get_all_model_tables():
-    """Возвращает список всех таблиц, определенных в схеме."""
+    """Возвращает список всех таблиц, определенных в схеме, с русскими названиями."""
     inspector = inspect(engine)
-    # Получаем имена всех существующих таблиц в БД
-    return inspector.get_table_names()
+    existing_tables = inspector.get_table_names()
+    
+    # Переводим технические имена в русские
+    translated_tables = [
+        {"technical_name": name, "russian_name": get_russian_name(name, 'table')}
+        for name in existing_tables
+    ]
+    return translated_tables
 
 def get_model_class_by_table_name(table_name: str):
     """Динамически находит класс модели SQLAlchemy по имени таблицы."""
@@ -34,13 +40,13 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
     """
     Основная страница панели управления, отображающая список таблиц БД.
     """
-    tables = get_all_model_tables()
+    tables_list = get_all_model_tables() # <--- Используем список с русскими названиями
     
     return templates.TemplateResponse(
         "dashboard.html", 
         {
             "request": request,
-            "tables": tables,
+            "tables": tables_list,
             "employee_login": "admin"
         }
     )
@@ -57,6 +63,7 @@ async def table_view(
     """
     
     ModelClass = get_model_class_by_table_name(table_name)
+    russian_table_name = get_russian_name(table_name, 'table') # <--- Получаем русское название таблицы
 
     if ModelClass is None:
         raise HTTPException(
@@ -64,36 +71,37 @@ async def table_view(
             detail=f"Таблица '{table_name}' не найдена или не имеет соответствующей ORM-модели."
         )
 
-    # 1. Получаем столбцы (заголовки)
-    # Используем названия атрибутов модели
-    column_names = [column.key for column in inspect(ModelClass).mapper.columns]
+    # 1. Получаем столбцы и переводим их
+    column_names = []
+    # Названия, которые будут отображаться пользователю
+    display_column_names = [] 
     
-    # 2. Получаем данные
+    for column in inspect(ModelClass).mapper.columns:
+        technical_name = column.key
+        column_names.append(technical_name)
+        # 💡 Переводим техническое имя столбца в русское
+        display_column_names.append(get_russian_name(technical_name, 'column')) 
+    
+    # 2. Получаем данные (логика запроса остается прежней)
     try:
-        # Выполняем простой запрос SELECT *
-        # Ограничиваем 50 строками, чтобы не нагружать браузер и БД
         query = db.query(ModelClass).limit(50)
         records = query.all()
         
-        # Преобразуем записи в список словарей для удобной передачи в шаблон
         data = []
         for record in records:
             row = {}
             for col_name in column_names:
-                # Получаем значение атрибута. Для дат, JSON и т.д. может потребоваться форматирование,
-                # но пока оставляем как есть.
                 value = getattr(record, col_name)
                 # Преобразуем None в строку 'NULL' для отображения
                 row[col_name] = value if value is not None else 'NULL' 
             data.append(row)
             
-        total_rows = db.query(ModelClass).count() # Подсчитываем общее количество строк
+        total_rows = db.query(ModelClass).count() 
 
     except Exception as e:
-        # Если что-то пошло не так (например, таблица пуста или ошибка SQL)
         print(f"Ошибка при запросе данных таблицы {table_name}: {e}")
-        column_names = ["Ошибка"]
-        data = [[f"Не удалось загрузить данные: {str(e)}"]]
+        display_column_names = ["Ошибка"]
+        data = []
         total_rows = 0
 
     # 3. Рендерим шаблон
@@ -102,8 +110,10 @@ async def table_view(
         {
             "request": request,
             "table_name": table_name,
-            "column_names": column_names, # Заголовки
-            "data": data,                 # Данные
-            "total_rows": total_rows,     # Общее количество
+            "russian_table_name": russian_table_name, # Передаем русское название таблицы
+            "column_names": column_names, # Технические имена (нужны для доступа к данным в строке)
+            "display_column_names": display_column_names, # Имена для отображения в заголовке
+            "data": data,                 
+            "total_rows": total_rows,     
         }
     )

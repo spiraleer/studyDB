@@ -130,11 +130,11 @@
             </div>
             
             <div class="table-grid">
-                {% for table_name in tables %}
-                <a href="/dashboard/table/{{ table_name }}" class="table-item"> 
+                {% for table in tables %}
+                <a href="/dashboard/table/{{ table.technical_name }}" class="table-item"> 
                     <i class="fas fa-database"></i>
-                    <span>{{ table_name|replace("_", " ")|capitalize }}</span>
-                    <small style="color: #6c757d;">({{ table_name }})</small>
+                    <span>{{ table.russian_name }}</span> 
+                    <small style="color: #6c757d;">({{ table.technical_name }})</small>
                 </a>
                 {% endfor %}
                 
