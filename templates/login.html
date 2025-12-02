@@ -1,396 +1,458 @@
 <!-- templates/login.html -->
 <!DOCTYPE html>
 <html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Вход в систему - Управление складом</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      body {
+        background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+      }
+
+      .login-container {
+        background: white;
+        border-radius: 20px;
+        padding: 40px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+        width: 100%;
+        max-width: 450px;
+        animation: fadeIn 0.8s ease-out;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
         }
-        
-        body {
-            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
+        to {
+          opacity: 1;
+          transform: translateY(0);
         }
-        
+      }
+
+      .login-header {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+
+      .logo {
+        font-size: 36px;
+        font-weight: 800;
+        background: linear-gradient(45deg, #6a11cb, #2575fc);
+        -webkit-background-clip: text;
+        -moz-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        -moz-text-fill-color: transparent;
+        margin-bottom: 10px;
+      }
+
+      .subtitle {
+        color: #666;
+        font-size: 16px;
+      }
+
+      .login-form {
+        margin-bottom: 25px;
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        color: #333;
+        font-weight: 600;
+        font-size: 14px;
+      }
+
+      .input-with-icon {
+        position: relative;
+      }
+
+      .input-with-icon i {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #666;
+      }
+
+      .input-with-icon input {
+        width: 100%;
+        padding: 14px 14px 14px 45px;
+        border: 2px solid #e1e5e9;
+        border-radius: 10px;
+        font-size: 16px;
+        transition: all 0.3s;
+      }
+
+      .input-with-icon input:focus {
+        outline: none;
+        border-color: #6a11cb;
+        box-shadow: 0 0 0 3px rgba(106, 17, 203, 0.1);
+      }
+
+      .form-options {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+        font-size: 14px;
+      }
+
+      .remember-me {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #555;
+      }
+
+      .remember-me input {
+        width: 18px;
+        height: 18px;
+      }
+
+      .forgot-password {
+        color: #6a11cb;
+        text-decoration: none;
+        font-weight: 500;
+      }
+
+      .forgot-password:hover {
+        text-decoration: underline;
+      }
+
+      .btn-login {
+        width: 100%;
+        padding: 16px;
+        background: linear-gradient(45deg, #6a11cb, #2575fc);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .btn-login:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(106, 17, 203, 0.3);
+      }
+
+      .btn-login:active {
+        transform: translateY(-1px);
+      }
+
+      .btn-back {
+        width: 100%;
+        padding: 14px;
+        background: #f8f9fa;
+        color: #333;
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        margin-top: 15px;
+        text-decoration: none;
+      }
+
+      .btn-back:hover {
+        background: #e9ecef;
+        transform: translateY(-2px);
+      }
+
+      .demo-credentials {
+        background: #f8f9ff;
+        border-radius: 10px;
+        padding: 15px;
+        margin-top: 25px;
+        border-left: 4px solid #6a11cb;
+      }
+
+      .demo-credentials h4 {
+        color: #333;
+        margin-bottom: 10px;
+        font-size: 14px;
+      }
+
+      .demo-credentials p {
+        color: #666;
+        font-size: 13px;
+        line-height: 1.5;
+        margin-bottom: 8px;
+      }
+
+      .demo-credentials .credential {
+        background: white;
+        padding: 8px 12px;
+        border-radius: 6px;
+        margin: 5px 0;
+        font-family: monospace;
+        font-size: 13px;
+      }
+
+      .error-message {
+        background: #fee;
+        border: 1px solid #fcc;
+        color: #c33;
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        display: none;
+        font-size: 14px;
+      }
+
+      .error-message.show {
+        display: block;
+      }
+
+      .footer {
+        text-align: center;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #eee;
+        color: #666;
+        font-size: 14px;
+      }
+
+      @media (max-width: 768px) {
         .login-container {
-            background: white;
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
-            width: 100%;
-            max-width: 450px;
-            animation: fadeIn 0.8s ease-out;
+          padding: 30px 25px;
         }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .login-header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        
+
         .logo {
-            font-size: 36px;
-            font-weight: 800;
-            background: linear-gradient(45deg, #6a11cb, #2575fc);
-            -webkit-background-clip: text;
-            -moz-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            -moz-text-fill-color: transparent;
-            margin-bottom: 10px;
+          font-size: 32px;
         }
-        
-        .subtitle {
-            color: #666;
-            font-size: 16px;
-        }
-        
-        .login-form {
-            margin-bottom: 25px;
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #333;
-            font-weight: 600;
-            font-size: 14px;
-        }
-        
-        .input-with-icon {
-            position: relative;
-        }
-        
-        .input-with-icon i {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #666;
-        }
-        
-        .input-with-icon input {
-            width: 100%;
-            padding: 14px 14px 14px 45px;
-            border: 2px solid #e1e5e9;
-            border-radius: 10px;
-            font-size: 16px;
-            transition: all 0.3s;
-        }
-        
-        .input-with-icon input:focus {
-            outline: none;
-            border-color: #6a11cb;
-            box-shadow: 0 0 0 3px rgba(106, 17, 203, 0.1);
-        }
-        
+
         .form-options {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-            font-size: 14px;
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 10px;
         }
-        
-        .remember-me {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: #555;
-        }
-        
-        .remember-me input {
-            width: 18px;
-            height: 18px;
-        }
-        
-        .forgot-password {
-            color: #6a11cb;
-            text-decoration: none;
-            font-weight: 500;
-        }
-        
-        .forgot-password:hover {
-            text-decoration: underline;
-        }
-        
-        .btn-login {
-            width: 100%;
-            padding: 16px;
-            background: linear-gradient(45deg, #6a11cb, #2575fc);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .btn-login:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(106, 17, 203, 0.3);
-        }
-        
-        .btn-login:active {
-            transform: translateY(-1px);
-        }
-        
-        .btn-back {
-            width: 100%;
-            padding: 14px;
-            background: #f8f9fa;
-            color: #333;
-            border: 2px solid #e9ecef;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-            margin-top: 15px;
-            text-decoration: none;
-        }
-        
-        .btn-back:hover {
-            background: #e9ecef;
-            transform: translateY(-2px);
-        }
-        
-        .demo-credentials {
-            background: #f8f9ff;
-            border-radius: 10px;
-            padding: 15px;
-            margin-top: 25px;
-            border-left: 4px solid #6a11cb;
-        }
-        
-        .demo-credentials h4 {
-            color: #333;
-            margin-bottom: 10px;
-            font-size: 14px;
-        }
-        
-        .demo-credentials p {
-            color: #666;
-            font-size: 13px;
-            line-height: 1.5;
-            margin-bottom: 8px;
-        }
-        
-        .demo-credentials .credential {
-            background: white;
-            padding: 8px 12px;
-            border-radius: 6px;
-            margin: 5px 0;
-            font-family: monospace;
-            font-size: 13px;
-        }
-        
-        .error-message {
-            background: #fee;
-            border: 1px solid #fcc;
-            color: #c33;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            display: none;
-            font-size: 14px;
-        }
-        
-        .error-message.show {
-            display: block;
-        }
-        
-        .footer {
-            text-align: center;
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #eee;
-            color: #666;
-            font-size: 14px;
-        }
-        
-        @media (max-width: 768px) {
-            .login-container {
-                padding: 30px 25px;
-            }
-            
-            .logo {
-                font-size: 32px;
-            }
-            
-            .form-options {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 10px;
-            }
-        }
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="login-container">
-        <div class="login-header">
-            <h1 class="logo"><i class="fas fa-warehouse"></i> Управление складом</h1>
-            <p class="subtitle">Войдите в систему для управления складом</p>
-        </div>
-        
-        <div id="error-message" class="error-message">
-            <i class="fas fa-exclamation-circle"></i> 
-            <span id="error-text">Ошибка авторизации</span>
-        </div>
-        
-        <form class="login-form" id="loginForm">
-            <div class="form-group">
-                <label for="username">Логин сотрудника</label>
-                <div class="input-with-icon">
-                    <i class="fas fa-user"></i>
-                    <input type="text" id="username" name="username" 
-                           placeholder="Введите ваш логин" required>
-                </div>
-            </div>
-            
-            <div class="form-group">
-                <label for="password">Пароль</label>
-                <div class="input-with-icon">
-                    <i class="fas fa-lock"></i>
-                    <input type="password" id="password" name="password" 
-                           placeholder="Введите ваш пароль" required>
-                </div>
-            </div>
-            
-            <div class="form-options">
-                <label class="remember-me">
-                    <input type="checkbox" id="remember" name="remember">
-                    Запомнить меня
-                </label>
-                <a href="#" class="forgot-password">Забыли пароль?</a>
-            </div>
-            
-            <button type="submit" class="btn-login">
-                <i class="fas fa-sign-in-alt"></i> Войти в систему
-            </button>
+      <div class="login-header">
+        <h1 class="logo">
+          <i class="fas fa-warehouse"></i> Управление складом
+        </h1>
+        <p class="subtitle">Войдите в систему для управления складом</p>
+      </div>
 
-            <button type="button" class="btn secondary-btn" id="guest-login-btn" style="background: #28a745; margin-top: 15px;">
-                <i class="fas fa-user-secret"></i> Войти как Гость (Тест)
-            </button>
-        </form>
-        
-        <div class="demo-credentials">
-            <h4><i class="fas fa-info-circle"></i> Тестовые учетные данные:</h4>
-            <p>Для демонстрации используйте:</p>
-            <div class="credential">Логин: <strong>admin</strong></div>
-            <div class="credential">Пароль: <strong>admin123</strong></div>
-            <p style="margin-top: 10px; color: #888; font-size: 12px;">
-                Функционал авторизации в разработке
-            </p>
+      <div id="error-message" class="error-message">
+        <i class="fas fa-exclamation-circle"></i>
+        <span id="error-text">Ошибка авторизации</span>
+      </div>
+
+      <form class="login-form" id="loginForm">
+        <div class="form-group">
+          <label for="username">Логин сотрудника</label>
+          <div class="input-with-icon">
+            <i class="fas fa-user"></i>
+            <input
+              type="text"
+              id="username"
+              name="username"
+              placeholder="Введите ваш логин"
+              required
+            />
+          </div>
         </div>
-        
-        <a href="/" class="btn-back">
-            <i class="fas fa-arrow-left"></i> Вернуться на главную
-        </a>
-        
-        <div class="footer">
-            <p>Система управления складом v1.0.0</p>
-            <p id="server-time"></p>
+
+        <div class="form-group">
+          <label for="password">Пароль</label>
+          <div class="input-with-icon">
+            <i class="fas fa-lock"></i>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              placeholder="Введите ваш пароль"
+              required
+            />
+          </div>
         </div>
+
+        <div class="form-options">
+          <label class="remember-me">
+            <input type="checkbox" id="remember" name="remember" />
+            Запомнить меня
+          </label>
+          <a href="#" class="forgot-password">Забыли пароль?</a>
+        </div>
+
+        <button type="submit" class="btn-login">
+          <i class="fas fa-sign-in-alt"></i> Войти в систему
+        </button>
+
+        <button
+          type="button"
+          class="btn secondary-btn"
+          id="guest-login-btn"
+          style="background: #28a745; margin-top: 15px"
+        >
+          <i class="fas fa-user-secret"></i> Войти как Гость (Тест)
+        </button>
+      </form>
+
+      <div class="demo-credentials">
+        <h4><i class="fas fa-info-circle"></i> Тестовые учетные данные:</h4>
+        <p>Для демонстрации используйте:</p>
+        <div class="credential">Логин: <strong>admin</strong></div>
+        <div class="credential">Пароль: <strong>admin123</strong></div>
+        <p style="margin-top: 10px; color: #888; font-size: 12px">
+          Функционал авторизации в разработке
+        </p>
+      </div>
+
+      <a href="/" class="btn-back">
+        <i class="fas fa-arrow-left"></i> Вернуться на главную
+      </a>
+
+      <div class="footer">
+        <p>Система управления складом v1.0.0</p>
+        <p id="server-time"></p>
+      </div>
     </div>
-    
+
     <script>
-        // Обновление времени
-        function updateServerTime() {
-            const now = new Date();
-            const timeString = now.toLocaleString('ru-RU', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit'
-            });
-            document.getElementById('server-time').textContent = `Текущее время: ${timeString}`;
-        }
-        
-        // Обработка формы входа
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            const errorDiv = document.getElementById('error-message');
-            const errorText = document.getElementById('error-text');
-            
-            // Показываем сообщение о разработке
-            errorText.textContent = 'Функционал авторизации находится в разработке. Используйте тестовые данные для демонстрации.';
-            errorDiv.classList.add('show');
-            
-            // Имитация загрузки
-            const btn = document.querySelector('.btn-login');
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Проверка...';
-            btn.disabled = true;
-            
-            // Возвращаем кнопку в исходное состояние через 2 секунды
-            setTimeout(() => {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-                
-                // Если введены тестовые данные, показываем успех
-                if (username === 'admin' && password === 'admin123') {
-                    errorText.textContent = 'Успешный вход! Функционал панели управления в разработке.';
-                    errorDiv.style.background = '#e8f7ee';
-                    errorDiv.style.borderColor = '#c3e6cb';
-                    errorDiv.style.color = '#155724';
-                }
-            }, 2000);
+      // Показываем текущее время
+      function updateServerTime() {
+        const now = new Date();
+        const formattedTime = now.toLocaleTimeString("ru-RU", {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
         });
-        
-        // Скрываем сообщение об ошибке при изменении полей
-        document.getElementById('username').addEventListener('input', function() {
-            document.getElementById('error-message').classList.remove('show');
-        });
-        
-        document.getElementById('password').addEventListener('input', function() {
-            document.getElementById('error-message').classList.remove('show');
-        });
-        
-        // Запускаем при загрузке страницы
-        document.addEventListener('DOMContentLoaded', function() {
-            updateServerTime();
-            setInterval(updateServerTime, 1000);
+        document.getElementById("server-time").textContent = formattedTime;
+      }
+
+      // Обработчик для кнопки "Войти как Гость" (из предыдущего шага)
+      document
+        .getElementById("guest-login-btn")
+        .addEventListener("click", function () {
+          window.location.href = "/dashboard";
         });
 
-        // Обработчик для кнопки "Войти как Гость"
-        document.getElementById('guest-login-btn').addEventListener('click', function() {
-            // Просто перенаправляем на базовый экран
-            window.location.href = '/dashboard';
+      // Обработчик отправки формы
+      document
+        .getElementById("loginForm")
+        .addEventListener("submit", async function (event) {
+          event.preventDefault(); // Предотвращаем стандартную отправку формы
+
+          const btn = event.submitter;
+          const originalText = btn.innerHTML;
+          const errorDiv = document.getElementById("error-message");
+          const errorText = document.getElementById("error-text");
+
+          // Сбор данных формы
+          const username = document.getElementById("username").value;
+          const password = document.getElementById("password").value;
+
+          // Визуализация загрузки
+          btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Вход...';
+          btn.disabled = true;
+
+          // Создание данных для отправки (Формат: application/x-www-form-urlencoded)
+          const formData = new URLSearchParams();
+          formData.append("username", username);
+          formData.append("password", password);
+
+          try {
+            // Отправка данных на роут аутентификации
+            const response = await fetch("/api/auth/token", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+              },
+              body: formData,
+            });
+
+            if (response.ok) {
+              // Успешный вход
+              errorText.textContent = "Успешный вход! Перенаправление...";
+              errorDiv.style.background = "#e8f7ee";
+              errorDiv.style.borderColor = "#c3e6cb";
+              errorDiv.style.color = "#155724";
+              errorDiv.classList.add("show");
+
+              // Перенаправляем на базовый экран системы
+              setTimeout(() => {
+                window.location.href = "/dashboard";
+              }, 1000);
+            } else {
+              // Ошибка входа (401 Unauthorized)
+              const errorData = await response.json();
+              errorText.textContent =
+                errorData.detail || "Неверный логин или пароль.";
+              errorDiv.style.background = "#f8d7da";
+              errorDiv.style.borderColor = "#f5c6cb";
+              errorDiv.style.color = "#721c24";
+              errorDiv.classList.add("show");
+            }
+          } catch (error) {
+            // Ошибка сети или сервера
+            errorText.textContent = "Ошибка соединения с сервером.";
+            errorDiv.classList.add("show");
+            console.error("Login error:", error);
+          } finally {
+            // Возвращаем кнопку в исходное состояние
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+          }
         });
+
+      // Скрываем сообщение об ошибке при изменении полей
+      document
+        .getElementById("username")
+        .addEventListener("input", function () {
+          document.getElementById("error-message").classList.remove("show");
+        });
+
+      document
+        .getElementById("password")
+        .addEventListener("input", function () {
+          document.getElementById("error-message").classList.remove("show");
+        });
+
+      // Запускаем при загрузке страницы
+      document.addEventListener("DOMContentLoaded", function () {
+        updateServerTime();
+        setInterval(updateServerTime, 1000);
+      });
     </script>
-</body>
+  </body>
 </html>

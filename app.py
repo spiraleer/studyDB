@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 from sqlalchemy import inspect
 from routes import dashboard
+from routes import dashboard, auth
 
 # Импортируем функции для работы с БД
 from models.database import check_database_connection, get_db, create_tables, engine
@@ -26,6 +27,7 @@ app = FastAPI(
 )
 
 app.include_router(dashboard.router)
+app.include_router(auth.router)
 
 # Настройка CORS (если нужно)
 if os.getenv("DEBUG", "False").lower() == "true":
