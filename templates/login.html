@@ -296,6 +296,10 @@
             <button type="submit" class="btn-login">
                 <i class="fas fa-sign-in-alt"></i> Войти в систему
             </button>
+
+            <button type="button" class="btn secondary-btn" id="guest-login-btn" style="background: #28a745; margin-top: 15px;">
+                <i class="fas fa-user-secret"></i> Войти как Гость (Тест)
+            </button>
         </form>
         
         <div class="demo-credentials">
@@ -380,6 +384,12 @@
         document.addEventListener('DOMContentLoaded', function() {
             updateServerTime();
             setInterval(updateServerTime, 1000);
+        });
+
+        // Обработчик для кнопки "Войти как Гость"
+        document.getElementById('guest-login-btn').addEventListener('click', function() {
+            // Просто перенаправляем на базовый экран
+            window.location.href = '/dashboard';
         });
     </script>
 </body>

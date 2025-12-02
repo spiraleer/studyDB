@@ -7,6 +7,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 from sqlalchemy import inspect
+from routes import dashboard
 
 # Импортируем функции для работы с БД
 from models.database import check_database_connection, get_db, create_tables, engine
@@ -23,6 +24,8 @@ app = FastAPI(
     docs_url="/api/docs" if os.getenv("DEBUG", "False").lower() == "true" else None,
     redoc_url="/api/redoc" if os.getenv("DEBUG", "False").lower() == "true" else None
 )
+
+app.include_router(dashboard.router)
 
 # Настройка CORS (если нужно)
 if os.getenv("DEBUG", "False").lower() == "true":
