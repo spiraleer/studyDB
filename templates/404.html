@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Страница не найдена</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Стиль взят из index.html / login.html */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            /* Используем градиент вашего проекта */
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .error-container {
+            background: white;
+            border-radius: 20px;
+            padding: 50px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        .error-code {
+            font-size: 8em;
+            font-weight: 700;
+            color: #dc3545; /* Используем danger-color из style.css */
+            margin-bottom: 5px;
+            line-height: 1;
+        }
+
+        .error-message {
+            font-size: 1.5em;
+            color: #343a40; /* dark-color */
+            margin-bottom: 30px;
+        }
+
+        .home-link {
+            display: inline-block;
+            background: linear-gradient(90deg, #6a11cb, #2575fc); /* primary/secondary color */
+            color: white;
+            padding: 10px 25px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: opacity 0.3s ease;
+        }
+
+        .home-link:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div class="error-code">404</div>
+        <h1 class="error-message">
+            <i class="fas fa-exclamation-triangle"></i> 
+            {{ error }}
+        </h1>
+        <p style="color: #6c757d; margin-bottom: 20px;">
+            К сожалению, страница, которую вы ищете, не существует.
+        </p>
+        <a href="/" class="home-link">
+            <i class="fas fa-home"></i> Перейти на главную
+        </a>
+    </div>
+</body>
+</html>
