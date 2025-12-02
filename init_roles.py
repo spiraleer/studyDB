@@ -1,73 +1,48 @@
-# init_roles.py
+# init_roles.py (обновлённая версия)
 import sys
 import os
+sys.path.append(os.path.dirname(__file__))
+
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy import select
+from models.database import SessionLocal
+from models.tables import Role, Permission, RolePermission
+from core.permissions import PERMISSIONS_BY_ROLE
 
-# Добавляем корневую папку в путь для корректного импорта модулей
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-sys.path.append('.')
+def assign_permissions_to_role(db: Session, role_name: str):
+    role = db.scalar(select(Role).filter(Role.role_name == role_name))
+    if not role:
+        print(f"Роль '{role_name}' не найдена!")
+        return
 
-# Импорт моделей и функций БД
-from models.database import SessionLocal, create_tables
-from models.tables import Role
-
-# --- Список дополнительных ролей ---
-ROLES_TO_ADD = [
-    {
-        "role_name": "Менеджер склада",
-        "description": "Управление запасами, приемом, перемещением и инвентаризацией товаров."
-    },
-    {
-        "role_name": "Продавец",
-        "description": "Создание заказов, обработка продаж и работа с клиентами."
-    },
-    {
-        "role_name": "Бухгалтер",
-        "description": "Формирование финансовых отчетов, управление ценами и поставщиками."
-    }
-]
-# -----------------------------------
-
-def create_initial_roles(db: Session):
-    """
-    Добавляет стандартные роли в базу данных, если они не существуют.
-    """
-    print("--- ДОБАВЛЕНИЕ СТАНДАРТНЫХ РОЛЕЙ ---")
-    
-    for role_data in ROLES_TO_ADD:
-        role_name = role_data["role_name"]
-        
-        # Проверяем, существует ли роль
-        existing_role = db.scalar(select(Role).filter(Role.role_name == role_name))
-        
-        if not existing_role:
-            try:
-                new_role = Role(
-                    role_name=role_name,
-                    description=role_data["description"]
-                )
-                db.add(new_role)
-                db.commit()
-                print(f"✅ Роль '{role_name}' успешно добавлена.")
-            except IntegrityError:
-                db.rollback()
-                print(f"❌ Ошибка: Роль '{role_name}' уже существует.")
-            except Exception as e:
-                db.rollback()
-                print(f"❌ Произошла ошибка при добавлении роли '{role_name}': {e}")
-        else:
-            print(f"⚠️ Роль '{role_name}' уже существует. Пропускаем.")
-    
-    print("---------------------------------------")
-    db.close()
-
+    permissions = PERMISSIONS_BY_ROLE.get(role_name, [])
+    added = 0
+    for perm_code in permissions:
+        permission = db.scalar(select(Permission).filter(Permission.permission_code == perm_code.value))
+        if permission and not db.scalar(select(RolePermission).filter_by(role_id=role.role_id, permission_id=permission.permission_id)):
+            db.add(RolePermission(role_id=role.role_id, permission_id=permission.permission_id))
+            added += 1
+    if added:
+        db.commit()
+        print(f"  → Добавлено {added} разрешений для роли '{role_name}'")
 
 if __name__ == "__main__":
-    # Убедимся, что таблицы созданы
-    create_tables_result = create_tables()
-    print(f"Статус таблиц: {create_tables_result['message']}")
-    
+    from init_permissions import create_permissions
+    from models.database import create_tables
+
+    create_tables()
     db = SessionLocal()
-    create_initial_roles(db)
+    create_permissions(db)
+
+    # Создаём/обновляем роли и назначаем права
+    from init_admin import create_initial_admin  # админ создаст свою роль
+    create_initial_admin(db)
+
+    roles_to_assign = ["Менеджер склада", "Продавец", "Бухгалтер"]
+    for role_name in roles_to_assign:
+        role = db.scalar(select(Role).filter(Role.role_name == role_name))
+        if role:
+            assign_permissions_to_role(db, role_name)
+
+    db.close()
+    print("\nРоли и разрешения успешно настроены!")
