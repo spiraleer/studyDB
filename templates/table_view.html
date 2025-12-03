@@ -1,156 +1,1057 @@
+<!-- templates/table_view.html - ИСПРАВЛЕННАЯ ВЕРСИЯ -->
 <!DOCTYPE html>
 <html lang="ru">
-  <head>
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Просмотр: {{ table_name|capitalize }}</title>
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    />
+    <title>{{ russian_table_name }} - Управление складом</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <style>
-      /* Основные стили из предыдущего шага */
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
 
-      body {
-        background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-        min-height: 100vh;
-        color: #333;
-        padding: 20px;
-      }
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            min-height: 100vh;
+            color: #333;
+            padding: 20px;
+        }
 
-      .content {
-        padding: 20px;
-        max-width: 95%; /* Расширяем для таблиц */
-        margin: 0 auto;
-      }
+        .content {
+            padding: 20px;
+            max-width: 95%;
+            margin: 0 auto;
+        }
 
-      .card {
-        background: rgba(255, 255, 255, 0.95);
-        padding: 25px;
-        border-radius: 15px;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        margin-bottom: 20px;
-      }
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
 
-      h1 {
-        color: #6a11cb;
-        margin-bottom: 20px;
-        border-bottom: 2px solid #eee;
-        padding-bottom: 10px;
-        font-size: 1.8em;
-      }
+        h1 {
+            color: #6a11cb;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            font-size: 1.8em;
+        }
 
-      .back-link {
-        display: inline-block;
-        margin-bottom: 20px;
-        color: white; /* Цвет ссылки изменен для фона */
-        text-decoration: none;
-        font-weight: 600;
-      }
-      .back-link:hover {
-        text-decoration: underline;
-      }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
 
-      /* Стили для Таблицы */
-      .data-table-container {
-        overflow-x: auto; /* Для горизонтального скролла */
-        max-width: 100%;
-      }
+        /* Стили для Таблицы */
+        .data-table-container {
+            overflow-x: auto;
+            max-width: 100%;
+            margin-top: 20px;
+        }
 
-      .data-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 0.9em;
-        min-width: 800px; /* Минимальная ширина, чтобы таблица не сжималась */
-      }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9em;
+            min-width: 1000px;
+        }
 
-      .data-table th,
-      .data-table td {
-        padding: 12px 15px;
-        text-align: left;
-        border-bottom: 1px solid #ddd;
-      }
+        .data-table th,
+        .data-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
 
-      .data-table th {
-        background-color: #f1f1f1;
-        color: #333;
-        text-transform: uppercase;
-        font-weight: 700;
-      }
+        .data-table th {
+            background-color: #f1f1f1;
+            color: #333;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
 
-      .data-table tr:nth-child(even) {
-        background-color: #f9f9f9;
-      }
+        .data-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
 
-      .data-table td {
-        white-space: nowrap; /* Предотвращаем перенос длинных строк */
-        max-width: 300px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
+        .data-table td {
+            white-space: nowrap;
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
 
-      .info-bar {
-        background: #e9ecef;
-        padding: 10px 15px;
-        border-radius: 8px;
-        margin-bottom: 20px;
-        color: #495057;
-      }
+        .info-bar {
+            background: #e9ecef;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            color: #495057;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Кнопки действий */
+        .table-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #6a11cb, #2575fc);
+            color: white;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        .btn-small {
+            padding: 5px 10px;
+            font-size: 0.8em;
+            margin: 0 3px;
+        }
+
+        /* Модальное окно */
+        .modal {
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .close {
+            float: right;
+            font-size: 28px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .form-group textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        /* Статус товара */
+        .status-active {
+            color: #28a745;
+            font-weight: 600;
+        }
+
+        .status-inactive {
+            color: #dc3545;
+            font-weight: 600;
+        }
     </style>
-  </head>
-  <body>
+</head>
+<body>
     <div class="content">
-      <a href="/dashboard" class="back-link">
-        <i class="fas fa-arrow-left"></i> Назад к списку таблиц
-      </a>
+        <a href="/dashboard" class="back-link">
+            <i class="fas fa-arrow-left"></i> Назад к списку таблиц
+        </a>
 
-      <div class="card">
-        <h1>
-          <i class="fas fa-table"></i> Таблица: {{ russian_table_name }} ({{
-          table_name }})
-        </h1>
+        <div class="card">
+            <h1>
+                <i class="fas fa-boxes"></i> Управление {{ russian_table_name }}
+            </h1>
 
-        <div class="info-bar">
-          <i class="fas fa-info-circle"></i> Отображено: {{ data|length }} из {{
-          total_rows }} записей. (Лимит: 50)
+            <div class="info-bar">
+                <div>
+                    <i class="fas fa-info-circle"></i> 
+                    Отображено: <span id="display-count">{{ data|length }}</span> из 
+                    <span id="total-rows">{{ total_rows }}</span> записей
+                </div>
+                <div class="table-actions">
+                    {% if table_name == 'product' %}
+                    <button onclick="showCreateForm()" class="btn btn-success">
+                        <i class="fas fa-plus"></i> Добавить товар
+                    </button>
+                    <button id="deleted-toggle-btn" onclick="toggleDeletedMenu()" class="btn btn-warning">
+                        <i class="fas fa-trash-restore"></i> Удалённые
+                        <span id="deleted-count" style="margin-left:6px; font-weight:700;">0</span>
+                    </button>
+                    {% elif table_name == 'category' %}
+                    <button onclick="showCreateCategoryForm()" class="btn btn-success">
+                        <i class="fas fa-plus"></i> Добавить категорию
+                    </button>
+                    {% endif %}
+                    <button onclick="refreshTable()" class="btn btn-secondary">
+                        <i class="fas fa-sync-alt"></i> Обновить
+                    </button>
+                </div>
+            </div>
+
+            <div class="data-table-container">
+                <table class="data-table" id="products-table">
+                    <thead>
+                        <tr>
+                            {% for col_name in display_column_names %}
+                            <th>{{ col_name }}</th>
+                            {% endfor %}
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body">
+                        {% for row in data %}
+                        <tr data-id="{{ row.product_id }}">
+                            {% for col_name in column_names %}
+                            <td>
+                                {% if col_name == 'is_active' %}
+                                    {% if row[col_name] %}
+                                        <span class="status-active">✅ Активен</span>
+                                    {% else %}
+                                        <span class="status-inactive">❌ Неактивен</span>
+                                    {% endif %}
+                                {% elif col_name == 'price' %}
+                                    {{ "%.2f"|format(row[col_name]) }} ₽
+                                {% else %}
+                                    {{ row[col_name] }}
+                                {% endif %}
+                            </td>
+                            {% endfor %}
+                            <td>
+                                {% if table_name == 'product' %}
+                                <button onclick="editProduct({{ row.product_id }})" class="btn btn-warning btn-small">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button onclick="deleteProduct({{ row.product_id }})" class="btn btn-danger btn-small">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                {% elif table_name == 'category' %}
+                                <button onclick="editCategory({{ row.category_id }})" class="btn btn-warning btn-small">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button onclick="deleteCategory({{ row.category_id }})" class="btn btn-danger btn-small">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        {% if not data %}
+                        <tr>
+                            <td colspan="{{ column_names|length + 1 }}" style="text-align: center; color: #721c24">
+                                ⚠️ В таблице нет записей
+                            </td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
         </div>
-
-        <div class="data-table-container">
-          <table class="data-table">
-            <thead>
-              <tr>
-                {% for col_name in display_column_names %}
-                <th>{{ col_name }}</th>
-                {% endfor %}
-              </tr>
-            </thead>
-            <tbody>
-              {% for row in data %}
-              <tr>
-                {% for col_name in column_names %} {# Выводим значение ячейки #}
-                <td>{{ row[col_name] }}</td>
-                {% endfor %}
-              </tr>
-              {% endfor %} {# Если данных нет #} {% if not data %}
-              <tr>
-                <td
-                  colspan="{{ display_column_names|length }}"
-                  style="text-align: center; color: #721c24"
-                >
-                  ⚠️ В этой таблице нет записей.
-                </td>
-              </tr>
-              {% endif %}
-            </tbody>
-          </table>
-        </div>
-      </div>
     </div>
-  </body>
+
+    {% if table_name == 'product' %}
+    <!-- Модальное окно для создания/редактирования товара -->
+    <div id="product-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h3 id="modal-title">Добавить товар</h3>
+            
+            <form id="product-form">
+                <input type="hidden" id="product-id">
+                
+                <div class="form-group">
+                    <label for="product-name">Название товара *</label>
+                    <input type="text" id="product-name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="product-description">Описание</label>
+                    <textarea id="product-description" rows="3"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="product-price">Цена (₽) *</label>
+                    <input type="number" id="product-price" step="0.01" min="0.01" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="product-quantity">Количество на складе *</label>
+                    <input type="number" id="product-quantity" min="0" value="0" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="product-unit">Единица измерения *</label>
+                    <select id="product-unit" required>
+                        <option value="шт.">шт.</option>
+                        <option value="кг">кг</option>
+                        <option value="л">л</option>
+                        <option value="м">м</option>
+                        <option value="упак.">упак.</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="product-category">Категория *</label>
+                    <select id="product-category" required>
+                        <option value="">Загрузка категорий...</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="product-barcode">Штрихкод</label>
+                    <input type="text" id="product-barcode">
+                </div>
+                
+                <div class="form-group">
+                    <label for="product-weight">Вес (кг)</label>
+                    <input type="number" id="product-weight" step="0.001" min="0">
+                </div>
+                
+                <div class="form-group">
+                    <label for="product-active">
+                        <input type="checkbox" id="product-active" checked> Активен
+                    </label>
+                </div>
+                
+                <div class="form-actions" style="margin-top: 20px;">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Сохранить
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">
+                        Отмена
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+    <script type="application/json" id="initial-data">
+            {
+                "column_names": {{ column_names | tojson }},
+                "display_column_names": {{ display_column_names | tojson }},
+                "is_product": {{ (table_name == 'product') | tojson }},
+                "is_category": {{ (table_name == 'category') | tojson }},
+                "table_name": {{ table_name | tojson }}
+            }
+    </script>
+
+    <script>
+        // Read initial data (keeps Jinja JSON out of JS parsing for editor)
+        const __INIT_DATA = JSON.parse(document.getElementById('initial-data').textContent || '{}');
+        const COLUMN_NAMES = __INIT_DATA.column_names || [];
+        const DISPLAY_COLUMN_NAMES = __INIT_DATA.display_column_names || [];
+
+        // Глобальные переменные
+        let categories = [];
+
+        {% if table_name == 'product' %}
+        // Загрузить список категорий
+        async function loadCategories() {
+            try {
+                const response = await fetch('/api/categories/');
+                if (response.ok) {
+                    categories = await response.json();
+                    const select = document.getElementById('product-category');
+                    if (!select) return;
+                    select.innerHTML = '<option value="">Выберите категорию</option>';
+
+                    categories.forEach(category => {
+                        const option = document.createElement('option');
+                        option.value = category.category_id;
+                        option.textContent = category.category_name;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки категорий:', error);
+            }
+        }
+
+        // Показать форму создания
+        async function showCreateForm() {
+            const titleEl = document.getElementById('modal-title'); if (titleEl) titleEl.textContent = 'Добавить товар';
+            const formEl = document.getElementById('product-form'); if (formEl) formEl.reset();
+            const idEl = document.getElementById('product-id'); if (idEl) idEl.value = '';
+            const activeEl = document.getElementById('product-active'); if (activeEl) activeEl.checked = true;
+
+            await loadCategories();
+            const modal = document.getElementById('product-modal'); if (modal) modal.style.display = 'flex';
+        }
+
+        // Редактировать товар
+        async function editProduct(productId) {
+            try {
+                const response = await fetch(`/api/products/${productId}`);
+                if (response.ok) {
+                    const product = await response.json();
+
+                    const titleEl = document.getElementById('modal-title'); if (titleEl) titleEl.textContent = 'Редактировать товар';
+                    const idEl = document.getElementById('product-id'); if (idEl) idEl.value = product.product_id;
+                    const nameEl = document.getElementById('product-name'); if (nameEl) nameEl.value = product.product_name || '';
+                    const descEl = document.getElementById('product-description'); if (descEl) descEl.value = product.description || '';
+                    const priceEl = document.getElementById('product-price'); if (priceEl) priceEl.value = product.price ?? '';
+                    const qtyEl = document.getElementById('product-quantity'); if (qtyEl) qtyEl.value = product.stock_quantity ?? 0;
+                    const unitEl = document.getElementById('product-unit'); if (unitEl) unitEl.value = product.unit || 'шт.';
+                    const barcodeEl = document.getElementById('product-barcode'); if (barcodeEl) barcodeEl.value = product.barcode || '';
+                    const weightEl = document.getElementById('product-weight'); if (weightEl) weightEl.value = product.weight ?? '';
+                    const activeEl = document.getElementById('product-active'); if (activeEl) activeEl.checked = !!product.is_active;
+
+                    await loadCategories();
+                    const catEl = document.getElementById('product-category'); if (catEl && product.category_id) catEl.value = product.category_id;
+
+                    const modal = document.getElementById('product-modal'); if (modal) modal.style.display = 'flex';
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки товара:', error);
+                alert('Ошибка загрузки товара');
+            }
+        }
+
+        {% endif %}
+
+        // Wrapper kept for table buttons
+        function deleteProduct(productId) {
+            showDeleteModal(productId, 'product');
+        }
+
+        // Ensure category helper functions exist for category page (or when buttons call them)
+        async function showCreateCategoryForm() {
+            const titleEl = document.getElementById('category-modal-title'); if (titleEl) titleEl.textContent = 'Добавить категорию';
+            const form = document.getElementById('category-form'); if (form) form.reset();
+            const idEl = document.getElementById('category-id'); if (idEl) idEl.value = '';
+            const modal = document.getElementById('category-modal'); if (modal) modal.style.display = 'flex';
+        }
+
+        async function editCategory(categoryId) {
+            try {
+                const resp = await fetch(`/api/categories/${categoryId}`);
+                if (resp.ok) {
+                    const cat = await resp.json();
+                    const idEl = document.getElementById('category-id'); if (idEl) idEl.value = cat.category_id;
+                    const nameEl = document.getElementById('category-name'); if (nameEl) nameEl.value = cat.category_name || '';
+                    const descEl = document.getElementById('category-description'); if (descEl) descEl.value = cat.description || '';
+                    const modal = document.getElementById('category-modal'); if (modal) modal.style.display = 'flex';
+                }
+            } catch (err) {
+                console.error('Ошибка загрузки категории:', err);
+                alert('Ошибка загрузки категории');
+            }
+        }
+
+        async function deleteCategory(categoryId) {
+            showDeleteModal(categoryId, 'category');
+        }
+
+        // Показать окно подтверждения удаления (универсальное)
+        function showDeleteModal(targetId, targetType, itemName) {
+            const modal = document.getElementById('delete-modal');
+            if (!modal) {
+                // Fallback to simple confirm when modal missing
+                const ok = confirm(`Подтвердите удаление`);
+                if (!ok) return;
+                // perform immediate deletion
+                performDelete(targetId, targetType, false);
+                return;
+            }
+
+            const title = document.getElementById('delete-modal-title');
+            const body = document.getElementById('delete-modal-body');
+            const idEl = document.getElementById('delete-target-id');
+            const typeEl = document.getElementById('delete-target-type');
+            const hardCheckbox = document.getElementById('delete-hard-checkbox');
+
+            if (title) title.textContent = `Удалить ${itemName || targetType}`;
+            if (body) body.textContent = `Вы уверены, что хотите удалить ${itemName || targetType}?`;
+            if (idEl) idEl.value = targetId;
+            if (typeEl) typeEl.value = targetType;
+            if (hardCheckbox) hardCheckbox.checked = false;
+
+            modal.style.display = 'flex';
+        }
+
+        function closeDeleteModal() {
+            const modal = document.getElementById('delete-modal');
+            if (modal) modal.style.display = 'none';
+        }
+
+        async function performDelete(targetId, targetType, hard) {
+            try {
+                const base = targetType === 'product' ? '/api/products/' : '/api/categories/';
+                let url = `${base}${targetId}`;
+                if (hard) url += '?hard=true';
+
+                const resp = await fetch(url, { method: 'DELETE' });
+                if (resp.ok) {
+                    alert(targetType === 'product' ? 'Товар удален' : 'Категория удалена');
+                    closeDeleteModal();
+                    refreshTable();
+                    // refresh deleted list if present
+                    try { if (typeof loadDeletedProducts === 'function' && targetType === 'product') loadDeletedProducts(); } catch (e) {}
+                } else {
+                    let txt = 'Ошибка';
+                    try { const e = await resp.json(); txt = e.detail || JSON.stringify(e); } catch (e) { txt = await resp.text(); }
+                    alert(`Ошибка: ${txt}`);
+                }
+            } catch (err) {
+                console.error('Ошибка удаления:', err);
+                alert('Ошибка соединения с сервером');
+            }
+        }
+
+        // Обработчик формы
+        // Product form submit (guarded if not present)
+        const productFormEl = document.getElementById('product-form');
+        if (productFormEl) {
+            productFormEl.addEventListener('submit', async function(e) {
+                e.preventDefault();
+
+                const productId = document.getElementById('product-id').value;
+                const isEdit = !!productId;
+
+                const categoryVal = document.getElementById('product-category').value;
+
+                const productData = {
+                    product_name: document.getElementById('product-name').value,
+                    description: document.getElementById('product-description').value || undefined,
+                    price: document.getElementById('product-price').value ? parseFloat(document.getElementById('product-price').value) : undefined,
+                    stock_quantity: document.getElementById('product-quantity').value ? parseInt(document.getElementById('product-quantity').value, 10) : 0,
+                    unit: document.getElementById('product-unit').value || undefined,
+                    barcode: document.getElementById('product-barcode').value || undefined,
+                    weight: document.getElementById('product-weight').value ? parseFloat(document.getElementById('product-weight').value) : undefined,
+                    is_active: document.getElementById('product-active').checked
+                };
+
+                if (categoryVal) {
+                    const cid = parseInt(categoryVal, 10);
+                    if (!Number.isNaN(cid)) productData.category_id = cid;
+                }
+
+                // Очистка undefined значений и NaN
+                Object.keys(productData).forEach(key => {
+                    const v = productData[key];
+                    if (v === undefined || v === '' || (typeof v === 'number' && Number.isNaN(v))) {
+                        delete productData[key];
+                    }
+                });
+
+                try {
+                    const url = isEdit ? `/api/products/${productId}` : '/api/products/';
+                    const method = isEdit ? 'PUT' : 'POST';
+
+                    const response = await fetch(url, {
+                        method: method,
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(productData)
+                    });
+
+                    if (response.ok) {
+                        // Try parse JSON but ignore if none
+                        try { await response.json(); } catch (e) {}
+                        alert(isEdit ? 'Товар обновлен' : 'Товар создан');
+                        closeModal();
+                        refreshTable();
+                    } else {
+                        let errorText = 'Неизвестная ошибка';
+                        try {
+                            const error = await response.json();
+                            errorText = error.detail || JSON.stringify(error);
+                        } catch (e) {
+                            errorText = await response.text();
+                        }
+                        alert(`Ошибка: ${errorText}`);
+                    }
+                } catch (error) {
+                    console.error('Ошибка сохранения товара:', error);
+                    alert('Ошибка соединения с сервером');
+                }
+            });
+        }
+        
+        // Category form submit (guarded) - will be attached in DOMContentLoaded
+        // Обновить таблицу
+        async function refreshTable() {
+            try {
+                let url = '/api/products/?limit=50';
+                if (__INIT_DATA.is_category) url = '/api/categories/';
+                // future: branch by __INIT_DATA.table_name for other tables
+
+                const response = await fetch(url);
+                if (response.ok) {
+                    const items = await response.json();
+                    renderTable(items);
+                }
+            } catch (error) {
+                console.error('Ошибка обновления таблицы:', error);
+            }
+        }
+
+        // --- Deleted products menu helpers (product page) ---
+        function toggleDeletedMenu() {
+            const panel = document.getElementById('deleted-menu');
+            if (!panel) return;
+            if (panel.style.display === 'none' || panel.style.display === '') {
+                panel.style.display = 'block';
+                loadDeletedProducts();
+            } else {
+                panel.style.display = 'none';
+            }
+        }
+
+        function closeDeletedMenu() {
+            const panel = document.getElementById('deleted-menu');
+            if (panel) panel.style.display = 'none';
+        }
+
+        async function loadDeletedProducts() {
+            // fetch soft-deleted products (active_only=false)
+            try {
+                const resp = await fetch('/api/products/?active_only=false&limit=200');
+                if (!resp.ok) {
+                    document.getElementById('deleted-list').textContent = 'Ошибка загрузки';
+                    return;
+                }
+                let items = await resp.json();
+                // handle cases where middleware/cli (PowerShell) wrapped array into object { value: [...] }
+                if (!Array.isArray(items) && items && Array.isArray(items.value)) {
+                    items = items.value;
+                }
+                if (!Array.isArray(items)) items = [];
+
+                renderDeletedList(items);
+                const cnt = document.getElementById('deleted-count'); if (cnt) cnt.textContent = items.length;
+            } catch (err) {
+                console.error('Ошибка загрузки удалённых товаров:', err);
+                const dl = document.getElementById('deleted-list'); if (dl) dl.textContent = 'Ошибка загрузки';
+            }
+        }
+
+        function renderDeletedList(items) {
+            const container = document.getElementById('deleted-list');
+            if (!container) return;
+            container.innerHTML = '';
+            if (!items || items.length === 0) {
+                container.innerHTML = '<div style="color:#666;">Нет удалённых товаров</div>';
+                return;
+            }
+
+            items.forEach(it => {
+                const row = document.createElement('div');
+                row.id = `deleted-row-${it.product_id}`;
+                row.style.display = 'flex';
+                row.style.justifyContent = 'space-between';
+                row.style.alignItems = 'center';
+                row.style.padding = '8px 0';
+                row.style.borderBottom = '1px solid #eee';
+
+                const left = document.createElement('div');
+                left.style.flex = '1';
+                left.style.marginRight = '8px';
+                const name = document.createElement('div');
+                name.textContent = it.product_name || `#${it.product_id}`;
+                name.style.fontWeight = '600';
+                const meta = document.createElement('div');
+                meta.style.fontSize = '12px';
+                meta.style.color = '#666';
+                meta.textContent = (it.price != null ? Number(it.price).toFixed(2) + ' ₽' : '') + (it.stock_quantity != null ? (' • ' + it.stock_quantity + ' шт.') : '');
+                left.appendChild(name);
+                left.appendChild(meta);
+
+                const actions = document.createElement('div');
+                // Restore button
+                const restoreBtn = document.createElement('button');
+                restoreBtn.className = 'btn btn-success btn-small';
+                restoreBtn.textContent = 'Восстановить';
+                restoreBtn.addEventListener('click', async function() {
+                    if (!confirm('Восстановить товар (сделать активным)?')) return;
+                    try {
+                        const resp = await fetch(`/api/products/${it.product_id}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ is_active: true })
+                        });
+                        if (resp.ok) {
+                            alert('Товар восстановлен');
+                            // remove this row from deleted list immediately
+                            try {
+                                const el = document.getElementById(`deleted-row-${it.product_id}`);
+                                if (el && el.parentNode) el.parentNode.removeChild(el);
+                                const cnt = document.getElementById('deleted-count');
+                                if (cnt) cnt.textContent = Math.max(0, parseInt(cnt.textContent || '0', 10) - 1);
+                            } catch (e) { /* ignore DOM errors */ }
+                            try { refreshTable(); } catch (e) {}
+                            // also refresh deleted list in background to keep server state
+                            try { loadDeletedProducts(); } catch (e) {}
+                        } else {
+                            let txt = 'Ошибка';
+                            try { const e = await resp.json(); txt = e.detail || JSON.stringify(e); } catch (e) { txt = await resp.text(); }
+                            alert(`Ошибка: ${txt}`);
+                        }
+                    } catch (err) {
+                        console.error('Ошибка восстановления:', err);
+                        alert('Ошибка соединения с сервером');
+                    }
+                });
+
+                const hardBtn = document.createElement('button');
+                hardBtn.className = 'btn btn-danger btn-small';
+                hardBtn.textContent = 'Жёстко удалить';
+                hardBtn.style.marginLeft = '8px';
+                hardBtn.addEventListener('click', function() {
+                    if (!confirm('Жёстко удалить товар из базы? Эту операцию нельзя отменить.')) return;
+                    performDelete(it.product_id, 'product', true);
+                });
+                actions.appendChild(restoreBtn);
+                actions.appendChild(hardBtn);
+
+                row.appendChild(left);
+                row.appendChild(actions);
+                container.appendChild(row);
+            });
+        }
+
+        // Отрисовать таблицу безопасно через DOM API (предотвращает XSS)
+        function renderTable(products) {
+            const tbody = document.getElementById('table-body');
+            const displayCount = document.getElementById('display-count');
+
+            displayCount.textContent = products.length;
+
+            tbody.innerHTML = '';
+
+            if (!products || products.length === 0) {
+                const tr = document.createElement('tr');
+                const td = document.createElement('td');
+                td.colSpan = COLUMN_NAMES.length + 1;
+                td.style.textAlign = 'center';
+                td.style.color = '#721c24';
+                td.textContent = '⚠️ В таблице нет товаров';
+                tr.appendChild(td);
+                tbody.appendChild(tr);
+                return;
+            }
+
+            products.forEach(product => {
+                const tr = document.createElement('tr');
+                // try multiple id names
+                tr.dataset.id = product.product_id ?? product.category_id ?? '';
+
+                COLUMN_NAMES.forEach(col => {
+                    const td = document.createElement('td');
+                    let value = product[col];
+
+                    if (col === 'price') {
+                        if (value != null && !Number.isNaN(Number(value))) {
+                            td.textContent = Number(value).toFixed(2) + ' ₽';
+                        } else {
+                            td.textContent = '';
+                        }
+                    } else if (col === 'is_active') {
+                        td.textContent = value ? '✅ Активен' : '❌ Неактивен';
+                        td.className = value ? 'status-active' : 'status-inactive';
+                    } else if (value === null || value === undefined) {
+                        td.textContent = '';
+                    } else {
+                        td.textContent = value;
+                    }
+
+                    tr.appendChild(td);
+                });
+
+                // Actions cell with buttons (create via DOM to avoid injecting product data)
+                const actionsTd = document.createElement('td');
+                if (__INIT_DATA.is_product) {
+                    const editBtn = document.createElement('button');
+                    editBtn.className = 'btn btn-warning btn-small';
+                    editBtn.title = 'Редактировать';
+                    editBtn.innerHTML = '<i class="fas fa-edit"></i>';
+                    editBtn.addEventListener('click', () => editProduct(product.product_id));
+
+                    const delBtn = document.createElement('button');
+                    delBtn.className = 'btn btn-danger btn-small';
+                    delBtn.title = 'Удалить';
+                    delBtn.innerHTML = '<i class="fas fa-trash"></i>';
+                    delBtn.addEventListener('click', () => deleteProduct(product.product_id));
+
+                    actionsTd.appendChild(editBtn);
+                    actionsTd.appendChild(delBtn);
+                } else if (__INIT_DATA.is_category) {
+                    const editBtn = document.createElement('button');
+                    editBtn.className = 'btn btn-warning btn-small';
+                    editBtn.title = 'Редактировать';
+                    editBtn.innerHTML = '<i class="fas fa-edit"></i>';
+                    editBtn.addEventListener('click', () => editCategory(product.category_id));
+
+                    const delBtn = document.createElement('button');
+                    delBtn.className = 'btn btn-danger btn-small';
+                    delBtn.title = 'Удалить';
+                    delBtn.innerHTML = '<i class="fas fa-trash"></i>';
+                    delBtn.addEventListener('click', () => deleteCategory(product.category_id));
+
+                    actionsTd.appendChild(editBtn);
+                    actionsTd.appendChild(delBtn);
+                }
+                tr.appendChild(actionsTd);
+
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Закрыть модальное окно (guarded)
+        function closeModal() {
+            const productModal = document.getElementById('product-modal');
+            if (productModal) productModal.style.display = 'none';
+            const categoryModal = document.getElementById('category-modal');
+            if (categoryModal) categoryModal.style.display = 'none';
+        }
+
+        // Закрытие модального окна при клике вне его
+        window.addEventListener('click', function(event) {
+            const productModal = document.getElementById('product-modal');
+            const categoryModal = document.getElementById('category-modal');
+            const deleteModal = document.getElementById('delete-modal');
+            if (event.target === productModal || event.target === categoryModal) {
+                closeModal();
+            }
+            if (event.target === deleteModal) {
+                closeDeleteModal();
+            }
+        });
+
+        // Закрытие модального окна по клавише Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeModal();
+        });
+
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            // Attach category form handler if it exists
+            const categoryFormEl = document.getElementById('category-form');
+            if (categoryFormEl) {
+                categoryFormEl.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    const categoryId = document.getElementById('category-id').value;
+                    const isEdit = !!categoryId;
+
+                    const data = {
+                        category_name: document.getElementById('category-name').value,
+                        description: document.getElementById('category-description').value || undefined
+                    };
+
+                    Object.keys(data).forEach(k => { if (data[k] === undefined || data[k] === '') delete data[k]; });
+
+                    try {
+                        const url = isEdit ? `/api/categories/${categoryId}` : '/api/categories/';
+                        const method = isEdit ? 'PUT' : 'POST';
+                        const response = await fetch(url, {
+                            method,
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(data)
+                        });
+
+                        if (response.ok) {
+                            try { await response.json(); } catch (e) {}
+                            alert(isEdit ? 'Категория обновлена' : 'Категория создана');
+                            closeModal();
+                            refreshTable();
+                        } else {
+                            let errorText = 'Неизвестная ошибка';
+                            try { const err = await response.json(); errorText = err.detail || JSON.stringify(err); } catch (e) { errorText = await response.text(); }
+                            alert(`Ошибка: ${errorText}`);
+                        }
+                    } catch (err) {
+                        console.error('Ошибка сохранения категории:', err);
+                        alert('Ошибка соединения с сервером');
+                    }
+                });
+            }
+
+            // Attach delete modal handlers
+            const deleteConfirmBtn = document.getElementById('delete-confirm-btn');
+            if (deleteConfirmBtn) {
+                deleteConfirmBtn.addEventListener('click', function() {
+                    const id = document.getElementById('delete-target-id').value;
+                    const type = document.getElementById('delete-target-type').value;
+                    const hard = !!document.getElementById('delete-hard-checkbox').checked;
+                    performDelete(id, type, hard);
+                });
+            }
+            const deleteCancelBtn = document.getElementById('delete-cancel-btn');
+            if (deleteCancelBtn) deleteCancelBtn.addEventListener('click', closeDeleteModal);
+
+            // Attach deleted-toggle handler (defensive: also present as inline onclick)
+            const deletedToggleBtn = document.getElementById('deleted-toggle-btn');
+            if (deletedToggleBtn) deletedToggleBtn.addEventListener('click', function(e){ e.preventDefault(); toggleDeletedMenu(); });
+
+            // Initialize appropriate features depending on table
+            if (__INIT_DATA.is_product) {
+                loadCategories();
+                refreshTable();
+                // Preload deleted-products count for badge
+                try { loadDeletedProducts(); } catch (e) {}
+            } else if (__INIT_DATA.is_category) {
+                // categories list is the table data itself
+                refreshTable();
+            } else {
+                // fallback: still try to refresh products
+                refreshTable();
+            }
+        });
+
+        // Defensive binder: attach click handler to deleted-toggle button immediately and retry if not present
+        (function bindDeletedToggle(retries = 10) {
+            const btn = document.getElementById('deleted-toggle-btn');
+            if (btn) {
+                // avoid double-binding
+                try { btn.removeEventListener && btn.removeEventListener('click', toggleDeletedMenu); } catch (e) {}
+                btn.addEventListener('click', function(e) { e.preventDefault(); toggleDeletedMenu(); });
+                return;
+            }
+            if (retries > 0) setTimeout(() => bindDeletedToggle(retries - 1), 150);
+        })();
+    </script>
+    <!-- Universal delete confirmation modal -->
+    <div id="delete-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeDeleteModal()">&times;</span>
+            <h3 id="delete-modal-title">Подтвердите удаление</h3>
+            <p id="delete-modal-body">Вы уверены?</p>
+
+            <div class="form-group">
+                <label for="delete-hard-checkbox">
+                    <input type="checkbox" id="delete-hard-checkbox"> Жёсткое удаление (удаление из базы)
+                </label>
+            </div>
+
+            <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
+                <button id="delete-confirm-btn" class="btn btn-danger">Удалить</button>
+                <button id="delete-cancel-btn" class="btn btn-secondary">Отмена</button>
+            </div>
+
+            <input type="hidden" id="delete-target-id">
+            <input type="hidden" id="delete-target-type">
+        </div>
+    </div>
+    {% if table_name == 'product' %}
+    <!-- Deleted items floating panel -->
+    <div id="deleted-menu" style="display:none; position: fixed; right: 20px; top: 100px; width: 360px; max-height: 60vh; overflow:auto; z-index:1500;">
+        <div class="card" style="padding: 12px 16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <strong>Удалённые товары</strong>
+                <button class="btn btn-secondary btn-small" onclick="closeDeletedMenu()">Закрыть</button>
+            </div>
+            <div id="deleted-list">
+                <div style="color:#666;">Загрузка...</div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% if table_name == 'category' %}
+    <!-- Category modal -->
+    <div id="category-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h3 id="category-modal-title">Добавить категорию</h3>
+            <form id="category-form">
+                <input type="hidden" id="category-id">
+                <div class="form-group">
+                    <label for="category-name">Название категории *</label>
+                    <input type="text" id="category-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="category-description">Описание</label>
+                    <textarea id="category-description" rows="3"></textarea>
+                </div>
+                <div class="form-actions" style="margin-top: 20px;">
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Отмена</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+</body>
 </html>
