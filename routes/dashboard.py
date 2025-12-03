@@ -5,7 +5,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy import inspect
 from sqlalchemy.orm import Session
 from models.database import engine, get_db
-from core.mapping import get_russian_name
+from core.mapping import get_russian_name, get_table_icon
 from dependencies import require_permission
 from core.permissions import PermissionCode
 
@@ -17,7 +17,7 @@ def get_all_model_tables():
     inspector = inspect(engine)
     existing_tables = inspector.get_table_names()
     return [
-        {"technical_name": name, "russian_name": get_russian_name(name, 'table')}
+        {"technical_name": name, "russian_name": get_russian_name(name, 'table'), "icon": get_table_icon(name)}
         for name in existing_tables
     ]
 

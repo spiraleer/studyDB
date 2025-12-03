@@ -82,6 +82,29 @@ COLUMN_NAMES_MAPPING = {
     "user_agent": "User Agent",
 }
 
+# Маппинг таблиц на иконки Font Awesome
+TABLE_ICONS_MAPPING = {
+    'role': 'fa-shield-alt',  # Роли - щит
+    'employee': 'fa-users',  # Сотрудники
+    'permission': 'fa-key',  # Разрешения - ключ
+    'role_permission': 'fa-lock',  # Роль-Разрешение - замок
+    'category': 'fa-folder',  # Категории - папка
+    'product': 'fa-box',  # Товары - коробка
+    'customer': 'fa-user-tie',  # Клиенты - пользователь в галстуке
+    'supplier': 'fa-truck',  # Поставщики - грузовик
+    'orders': 'fa-shopping-cart',  # Заказы - корзина
+    'orders_item': 'fa-receipt',  # Позиции заказа - чек
+    'payment': 'fa-money-bill',  # Платежи - банкнота
+    'purchase': 'fa-shopping-bag',  # Покупки - сумка
+    'purchase_item': 'fa-list',  # Позиции покупки - список
+    'price_history': 'fa-history',  # История цен - история
+    'stock_movement': 'fa-arrows-alt-h',  # Движение товара - стрелки
+    'audit_log': 'fa-clipboard-list',  # Аудит - чек-лист
+    'user_session': 'fa-sign-in-alt',  # Сессии - вход
+    'inventory_transaction': 'fa-arrows-alt-v',  # Транзакции склада
+}
+
+
 def get_russian_name(technical_name: str, map_type: str) -> str:
     """
     Возвращает русское название по техническому имени.
@@ -92,3 +115,10 @@ def get_russian_name(technical_name: str, map_type: str) -> str:
     
     # Если название есть в словаре, возвращаем его, иначе форматируем техническое название
     return mapping.get(technical_name, technical_name.replace("_", " ").capitalize())
+
+
+def get_table_icon(table_name: str) -> str:
+    """
+    Возвращает иконку Font Awesome для таблицы.
+    """
+    return TABLE_ICONS_MAPPING.get(table_name, 'fa-database')

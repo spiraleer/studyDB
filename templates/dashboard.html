@@ -132,7 +132,7 @@
             <div class="table-grid">
                 {% for table in tables %}
                 <a href="/dashboard/table/{{ table.technical_name }}" class="table-item"> 
-                    <i class="fas fa-database"></i>
+                    <i class="fas {{ table.icon }}"></i>
                     <span>{{ table.russian_name }}</span> 
                     <small style="color: #6c757d;">({{ table.technical_name }})</small>
                 </a>
