@@ -11,6 +11,8 @@ from routes import dashboard
 from routes import dashboard, auth
 from routes import categories
 from routes import products
+from routes import orders
+from routes import customers
 
 # Импортируем функции для работы с БД
 from models.database import check_database_connection, get_db, create_tables, engine
@@ -32,6 +34,8 @@ app.include_router(dashboard.router)
 app.include_router(auth.router)
 app.include_router(categories.router)
 app.include_router(products.router)
+app.include_router(orders.router)
+app.include_router(customers.router)
 
 # Настройка CORS (если нужно)
 if os.getenv("DEBUG", "False").lower() == "true":

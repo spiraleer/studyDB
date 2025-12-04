@@ -263,6 +263,14 @@
                     <button onclick="showCreateCategoryForm()" class="btn btn-success">
                         <i class="fas fa-plus"></i> Добавить категорию
                     </button>
+                    {% elif table_name == 'orders' %}
+                    <button onclick="showCreateOrderForm()" class="btn btn-success">
+                        <i class="fas fa-plus"></i> Создать заказ
+                    </button>
+                    {% elif table_name == 'customer' %}
+                    <button onclick="showCreateCustomerForm()" class="btn btn-success">
+                        <i class="fas fa-plus"></i> Добавить клиента
+                    </button>
                     {% endif %}
                     <button onclick="refreshTable()" class="btn btn-secondary">
                         <i class="fas fa-sync-alt"></i> Обновить
@@ -322,6 +330,17 @@
                                 </button>
                                 <button onclick="deleteCategory({{ row.category_id }})" class="btn btn-danger btn-small">
                                     <i class="fas fa-trash"></i>
+                                </button>
+                                {% elif table_name == 'customer' %}
+                                <button onclick="editCustomer({{ row.customer_id }})" class="btn btn-warning btn-small">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button onclick="deleteCustomer({{ row.customer_id }})" class="btn btn-danger btn-small">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                {% elif table_name == 'orders' %}
+                                <button onclick="editOrder({{ row.order_id }})" class="btn btn-warning btn-small">
+                                    <i class="fas fa-edit"></i>
                                 </button>
                                 {% endif %}
                             </td>
@@ -670,6 +689,10 @@
                     url = '/api/products/?limit=50';
                 } else if (__INIT_DATA.is_category) {
                     url = '/api/categories/';
+                } else if (__INIT_DATA.table_name === 'orders') {
+                    url = '/api/orders/';
+                } else if (__INIT_DATA.table_name === 'customer') {
+                    url = '/api/customers/';
                 } else {
                     // Для других таблиц перезагружаем страницу
                     window.location.reload();
@@ -900,6 +923,21 @@
 
                     actionsTd.appendChild(editBtn);
                     actionsTd.appendChild(delBtn);
+                } else if (__INIT_DATA.table_name === 'customer') {
+                    const editBtn = document.createElement('button');
+                    editBtn.className = 'btn btn-warning btn-small';
+                    editBtn.title = 'Редактировать';
+                    editBtn.innerHTML = '<i class="fas fa-edit"></i>';
+                    editBtn.addEventListener('click', () => editCustomer(product.customer_id));
+
+                    const delBtn = document.createElement('button');
+                    delBtn.className = 'btn btn-danger btn-small';
+                    delBtn.title = 'Удалить';
+                    delBtn.innerHTML = '<i class="fas fa-trash"></i>';
+                    delBtn.addEventListener('click', () => deleteCustomer(product.customer_id));
+
+                    actionsTd.appendChild(editBtn);
+                    actionsTd.appendChild(delBtn);
                 }
                 tr.appendChild(actionsTd);
 
@@ -913,14 +951,19 @@
             if (productModal) productModal.style.display = 'none';
             const categoryModal = document.getElementById('category-modal');
             if (categoryModal) categoryModal.style.display = 'none';
+            const orderModal = document.getElementById('order-modal');
+            if (orderModal) orderModal.style.display = 'none';
+            const customerModal = document.getElementById('customer-modal');
+            if (customerModal) customerModal.style.display = 'none';
         }
 
         // Закрытие модального окна при клике вне его
         window.addEventListener('click', function(event) {
             const productModal = document.getElementById('product-modal');
             const categoryModal = document.getElementById('category-modal');
+            const orderModal = document.getElementById('order-modal');
             const deleteModal = document.getElementById('delete-modal');
-            if (event.target === productModal || event.target === categoryModal) {
+            if (event.target === productModal || event.target === categoryModal || event.target === orderModal) {
                 closeModal();
             }
             if (event.target === deleteModal) {
@@ -933,6 +976,215 @@
             if (e.key === 'Escape') closeModal();
         });
 
+        // Функции для работы с заказами
+        let orderProducts = [];
+        let orderCustomers = [];
+        let orderItems = [];
+        
+        async function showCreateOrderForm() {
+            document.getElementById('order-modal-title').textContent = 'Создать заказ';
+            document.getElementById('order-form').reset();
+            document.getElementById('order-id').value = '';
+            document.getElementById('order-status').value = 'Принят';
+            await loadOrderData();
+            orderItems = [];
+            updateOrderItemsDisplay();
+            updateOrderTotal();
+            document.getElementById('order-modal').style.display = 'flex';
+        }
+        
+        async function editOrder(orderId) {
+            try {
+                await loadOrderData();
+                
+                const response = await fetch(`/api/orders/${orderId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    const order = data.order;
+                    const items = data.items;
+                    
+                    document.getElementById('order-modal-title').textContent = 'Редактировать заказ';
+                    document.getElementById('order-id').value = order.order_id;
+                    document.getElementById('order-customer').value = order.customer_id || '';
+                    document.getElementById('order-status').value = order.status || 'Принят';
+                    document.getElementById('order-payment-type').value = order.payment_type || 'cash';
+                    document.getElementById('order-discount').value = order.discount_percent || 0;
+                    document.getElementById('order-notes').value = order.notes || '';
+                    
+                    // Загружаем позиции заказа
+                    orderItems = items.map(item => ({
+                        id: Date.now() + Math.random(),
+                        product_id: item.product_id,
+                        quantity: item.quantity,
+                        item_price: parseFloat(item.item_price),
+                        item_discount: parseFloat(item.item_discount || 0)
+                    }));
+                    
+                    updateOrderItemsDisplay();
+                    updateOrderTotal();
+                    document.getElementById('order-modal').style.display = 'flex';
+                }
+            } catch (error) {
+                alert('Ошибка загрузки заказа');
+            }
+        }
+        
+        async function loadOrderData() {
+            try {
+                const [customersResp, productsResp] = await Promise.all([
+                    fetch('/api/orders/customers'),
+                    fetch('/api/orders/products')
+                ]);
+                
+                if (customersResp.ok) {
+                    orderCustomers = await customersResp.json();
+                    const select = document.getElementById('order-customer');
+                    select.innerHTML = '<option value="">Выберите клиента</option>';
+                    orderCustomers.forEach(customer => {
+                        const option = document.createElement('option');
+                        option.value = customer.customer_id;
+                        option.textContent = customer.customer_name;
+                        select.appendChild(option);
+                    });
+                }
+                
+                if (productsResp.ok) {
+                    orderProducts = await productsResp.json();
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки данных:', error);
+            }
+        }
+        
+        function addOrderItem() {
+            const itemId = Date.now();
+            orderItems.push({
+                id: itemId,
+                product_id: null,
+                quantity: 1,
+                item_price: 0,
+                item_discount: 0
+            });
+            updateOrderItemsDisplay();
+        }
+        
+        function removeOrderItem(itemId) {
+            orderItems = orderItems.filter(item => item.id !== itemId);
+            updateOrderItemsDisplay();
+            updateOrderTotal();
+        }
+        
+        function updateOrderItemsDisplay() {
+            const container = document.getElementById('order-items');
+            container.innerHTML = '';
+            
+            orderItems.forEach(item => {
+                const div = document.createElement('div');
+                div.style.cssText = 'border: 1px solid #ddd; padding: 10px; margin: 10px 0; border-radius: 5px;';
+                
+                div.innerHTML = `
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <select onchange="updateOrderItem(${item.id}, 'product_id', this.value)" style="flex: 2;">
+                            <option value="">Выберите товар</option>
+                            ${orderProducts.map(p => `<option value="${p.product_id}" ${p.product_id == item.product_id ? 'selected' : ''}>${p.product_name} - ${p.price} ₽</option>`).join('')}
+                        </select>
+                        <input type="number" placeholder="Кол-во" min="1" value="${item.quantity}" 
+                               onchange="updateOrderItem(${item.id}, 'quantity', this.value)" style="width: 80px;">
+                        <input type="number" placeholder="Цена" step="0.01" value="${item.item_price}" 
+                               onchange="updateOrderItem(${item.id}, 'item_price', this.value)" style="width: 100px;">
+                        <input type="number" placeholder="Скидка %" min="0" max="100" step="0.01" value="${item.item_discount}" 
+                               onchange="updateOrderItem(${item.id}, 'item_discount', this.value)" style="width: 100px;">
+                        <button type="button" onclick="removeOrderItem(${item.id})" class="btn btn-danger btn-small">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+        
+        function updateOrderItem(itemId, field, value) {
+            const item = orderItems.find(i => i.id === itemId);
+            if (item) {
+                item[field] = field === 'product_id' ? parseInt(value) : parseFloat(value) || 0;
+                
+                // Автозаполнение цены при выборе товара
+                if (field === 'product_id' && value) {
+                    const product = orderProducts.find(p => p.product_id === parseInt(value));
+                    if (product && item.item_price === 0) {
+                        item.item_price = parseFloat(product.price);
+                        updateOrderItemsDisplay();
+                    }
+                }
+                
+                updateOrderTotal();
+            }
+        }
+        
+        function updateOrderTotal() {
+            let total = 0;
+            orderItems.forEach(item => {
+                if (item.product_id && item.quantity && item.item_price) {
+                    const itemTotal = item.quantity * item.item_price * (1 - item.item_discount / 100);
+                    total += itemTotal;
+                }
+            });
+            
+            const discount = parseFloat(document.getElementById('order-discount').value) || 0;
+            total = total * (1 - discount / 100);
+            
+            document.getElementById('order-total').textContent = total.toFixed(2);
+        }
+        
+        // Функции для клиентов
+        async function showCreateCustomerForm() {
+            document.getElementById('customer-modal-title').textContent = 'Добавить клиента';
+            document.getElementById('customer-form').reset();
+            document.getElementById('customer-id').value = '';
+            document.getElementById('customer-modal').style.display = 'flex';
+        }
+        
+        async function editCustomer(customerId) {
+            try {
+                const response = await fetch(`/api/customers/${customerId}`);
+                if (response.ok) {
+                    const customer = await response.json();
+                    
+                    document.getElementById('customer-modal-title').textContent = 'Редактировать клиента';
+                    document.getElementById('customer-id').value = customer.customer_id;
+                    document.getElementById('customer-name').value = customer.customer_name || '';
+                    document.getElementById('customer-phone').value = customer.phone || '';
+                    document.getElementById('customer-email').value = customer.email || '';
+                    document.getElementById('customer-loyalty-card').value = customer.loyalty_card_number || '';
+                    document.getElementById('customer-notes').value = customer.notes || '';
+                    
+                    document.getElementById('customer-modal').style.display = 'flex';
+                }
+            } catch (error) {
+                alert('Ошибка загрузки клиента');
+            }
+        }
+        
+        async function deleteCustomer(customerId) {
+            if (!confirm('Удалить клиента?')) return;
+            
+            try {
+                const response = await fetch(`/api/customers/${customerId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    alert('Клиент удален');
+                    refreshTable();
+                } else {
+                    const error = await response.json();
+                    alert('Ошибка: ' + (error.detail || 'Неизвестная ошибка'));
+                }
+            } catch (error) {
+                alert('Ошибка соединения');
+            }
+        }
+        
         // Очистить все сессии
         async function clearAllSessions() {
             if (!confirm('Удалить все сессии? Это действие нельзя отменить.')) return;
@@ -1015,16 +1267,141 @@
             if (deletedToggleBtn) deletedToggleBtn.addEventListener('click', function(e){ e.preventDefault(); toggleDeletedMenu(); });
 
             // Initialize appropriate features depending on table
+            // Обработчик формы клиентов
+            const customerFormEl = document.getElementById('customer-form');
+            if (customerFormEl) {
+                customerFormEl.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    const customerId = document.getElementById('customer-id').value;
+                    const isEdit = !!customerId;
+                    
+                    const customerData = {
+                        customer_name: document.getElementById('customer-name').value,
+                        phone: document.getElementById('customer-phone').value,
+                        email: document.getElementById('customer-email').value || undefined,
+                        loyalty_card_number: document.getElementById('customer-loyalty-card').value || undefined,
+                        notes: document.getElementById('customer-notes').value || undefined
+                    };
+                    
+                    Object.keys(customerData).forEach(key => {
+                        if (customerData[key] === undefined || customerData[key] === '') {
+                            delete customerData[key];
+                        }
+                    });
+                    
+                    try {
+                        const url = isEdit ? `/api/customers/${customerId}` : '/api/customers/';
+                        const method = isEdit ? 'PUT' : 'POST';
+                        
+                        const response = await fetch(url, {
+                            method: method,
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(customerData)
+                        });
+                        
+                        if (response.ok) {
+                            alert(isEdit ? 'Клиент обновлен' : 'Клиент создан');
+                            closeModal();
+                            refreshTable();
+                        } else {
+                            const error = await response.json();
+                            alert('Ошибка: ' + (error.detail || 'Неизвестная ошибка'));
+                        }
+                    } catch (error) {
+                        alert('Ошибка соединения');
+                    }
+                });
+            }
+            
+            // Обработчик формы заказа
+            const orderFormEl = document.getElementById('order-form');
+            if (orderFormEl) {
+                orderFormEl.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    const orderId = document.getElementById('order-id').value;
+                    const isEdit = !!orderId;
+                    const customerId = document.getElementById('order-customer').value;
+                    const status = document.getElementById('order-status').value;
+                    const paymentType = document.getElementById('order-payment-type').value;
+                    const discount = parseFloat(document.getElementById('order-discount').value) || 0;
+                    const notes = document.getElementById('order-notes').value;
+                    
+                    if (!customerId) {
+                        alert('Выберите клиента');
+                        return;
+                    }
+                    
+                    if (orderItems.length === 0) {
+                        alert('Добавьте хотя бы один товар');
+                        return;
+                    }
+                    
+                    const validItems = orderItems.filter(item => item.product_id && item.quantity > 0 && item.item_price > 0);
+                    if (validItems.length === 0) {
+                        alert('Заполните все поля товаров');
+                        return;
+                    }
+                    
+                    let totalAmount = 0;
+                    validItems.forEach(item => {
+                        totalAmount += item.quantity * item.item_price * (1 - item.item_discount / 100);
+                    });
+                    totalAmount = totalAmount * (1 - discount / 100);
+                    
+                    const orderData = {
+                        customer_id: parseInt(customerId),
+                        status: status,
+                        total_amount: totalAmount,
+                        discount_percent: discount,
+                        payment_type: paymentType,
+                        notes: notes,
+                        items: validItems.map(item => ({
+                            product_id: item.product_id,
+                            quantity: item.quantity,
+                            item_price: item.item_price,
+                            item_discount: item.item_discount
+                        }))
+                    };
+                    
+                    try {
+                        const url = isEdit ? `/api/orders/${orderId}` : '/api/orders/';
+                        const method = isEdit ? 'PUT' : 'POST';
+                        
+                        const response = await fetch(url, {
+                            method: method,
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(orderData)
+                        });
+                        
+                        if (response.ok) {
+                            alert(isEdit ? 'Заказ обновлен' : 'Заказ создан');
+                            closeModal();
+                            refreshTable();
+                        } else {
+                            const error = await response.json();
+                            alert('Ошибка: ' + (error.detail || 'Неизвестная ошибка'));
+                        }
+                    } catch (error) {
+                        alert('Ошибка соединения');
+                    }
+                });
+            }
+            
+            // Обновление итога при изменении скидки
+            const discountEl = document.getElementById('order-discount');
+            if (discountEl) {
+                discountEl.addEventListener('input', updateOrderTotal);
+            }
+            
             if (__INIT_DATA.is_product) {
                 loadCategories();
                 refreshTable();
-                // Preload deleted-products count for badge
                 try { loadDeletedProducts(); } catch (e) {}
             } else if (__INIT_DATA.is_category) {
-                // categories list is the table data itself
                 refreshTable();
             } else {
-                // Для других таблиц не вызываем refreshTable
                 console.log('Таблица:', __INIT_DATA.table_name, 'не имеет API для обновления');
             }
         });
@@ -1095,6 +1472,123 @@
                 </div>
                 <div class="form-actions" style="margin-top: 20px;">
                     <button type="submit" class="btn btn-primary">Сохранить</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Отмена</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if table_name == 'orders' %}
+    <!-- Модальное окно для создания заказа -->
+    <div id="order-modal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h3 id="order-modal-title">Создать заказ</h3>
+            
+            <form id="order-form">
+                <input type="hidden" id="order-id">
+                
+                <div class="form-group">
+                    <label for="order-status">Статус заказа</label>
+                    <select id="order-status">
+                        <option value="Принят">Принят</option>
+                        <option value="В обработке">В обработке</option>
+                        <option value="Оплачен">Оплачен</option>
+                        <option value="Завершен">Завершен</option>
+                        <option value="Отменен">Отменен</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="order-customer">Клиент</label>
+                    <select id="order-customer">
+                        <option value="">Выберите клиента</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="order-payment-type">Тип оплаты</label>
+                    <select id="order-payment-type">
+                        <option value="cash">Наличные</option>
+                        <option value="card">Карта</option>
+                        <option value="online">Онлайн</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="order-discount">Скидка (%)</label>
+                    <input type="number" id="order-discount" min="0" max="100" step="0.01" value="0">
+                </div>
+                
+                <div class="form-group">
+                    <label for="order-notes">Примечания</label>
+                    <textarea id="order-notes" rows="2"></textarea>
+                </div>
+                
+                <h4>Товары в заказе</h4>
+                <div class="form-group">
+                    <button type="button" onclick="addOrderItem()" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Добавить товар
+                    </button>
+                </div>
+                
+                <div id="order-items"></div>
+                
+                <div class="form-group">
+                    <strong>Итого: <span id="order-total">0.00</span> ₽</strong>
+                </div>
+                
+                <div class="form-actions" style="margin-top: 20px;">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Создать заказ
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Отмена</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if table_name == 'customer' %}
+    <!-- Модальное окно для клиентов -->
+    <div id="customer-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h3 id="customer-modal-title">Добавить клиента</h3>
+            
+            <form id="customer-form">
+                <input type="hidden" id="customer-id">
+                
+                <div class="form-group">
+                    <label for="customer-name">Имя клиента *</label>
+                    <input type="text" id="customer-name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="customer-phone">Телефон *</label>
+                    <input type="tel" id="customer-phone" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="customer-email">Эл. почта</label>
+                    <input type="email" id="customer-email">
+                </div>
+                
+                <div class="form-group">
+                    <label for="customer-loyalty-card">Номер карты лояльности</label>
+                    <input type="text" id="customer-loyalty-card">
+                </div>
+                
+                <div class="form-group">
+                    <label for="customer-notes">Примечания</label>
+                    <textarea id="customer-notes" rows="3"></textarea>
+                </div>
+                
+                <div class="form-actions" style="margin-top: 20px;">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Сохранить
+                    </button>
                     <button type="button" class="btn btn-secondary" onclick="closeModal()">Отмена</button>
                 </div>
             </form>
