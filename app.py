@@ -200,6 +200,10 @@ async def settings_page(request: Request):
 async def audit_page(request: Request):
     return templates.TemplateResponse("audit.html", {"request": request})
 
+@app.get("/docs", response_class=HTMLResponse)
+async def api_docs_page(request: Request):
+    return templates.TemplateResponse("api_docs.html", {"request": request})
+
 # Обработчик 404 ошибки
 @app.exception_handler(404)
 async def not_found_exception_handler(request: Request, exc):

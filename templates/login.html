@@ -34,7 +34,7 @@
         padding: 50px;
         box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2);
         width: 100%;
-        max-width: 480px;
+        max-width: 450px;
         animation: fadeIn 0.8s ease-out;
         border: 1px solid rgba(255, 255, 255, 0.3);
         backdrop-filter: blur(15px);
@@ -82,7 +82,8 @@
 
       .subtitle {
         color: #666;
-        font-size: 16px;
+        font-size: 15px;
+        font-weight: 500;
       }
 
       .login-form {
@@ -131,35 +132,7 @@
         transform: translateY(-2px);
       }
 
-      .form-options {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 25px;
-        font-size: 14px;
-      }
 
-      .remember-me {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        color: #555;
-      }
-
-      .remember-me input {
-        width: 18px;
-        height: 18px;
-      }
-
-      .forgot-password {
-        color: #6a11cb;
-        text-decoration: none;
-        font-weight: 500;
-      }
-
-      .forgot-password:hover {
-        text-decoration: underline;
-      }
 
       .btn-login {
         width: 100%;
@@ -204,6 +177,38 @@
         transform: translateY(-1px);
       }
 
+
+
+
+
+      .error-message {
+        background: #fee;
+        border: 1px solid #fcc;
+        color: #c33;
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        display: none;
+        font-size: 14px;
+      }
+
+      .error-message.show {
+        display: block;
+      }
+
+      .footer {
+        text-align: center;
+        margin-top: 40px;
+        padding-top: 25px;
+        border-top: 2px solid #f0f0f0;
+        color: #888;
+        font-size: 13px;
+      }
+      
+      .footer p {
+        margin: 5px 0;
+      }
+
       .btn-back {
         width: 100%;
         padding: 14px;
@@ -228,73 +233,6 @@
         transform: translateY(-2px);
       }
 
-      .demo-credentials {
-        background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
-        border-radius: 15px;
-        padding: 20px;
-        margin-top: 30px;
-        border: 1px solid #e3e6f0;
-        box-shadow: 0 5px 15px rgba(106, 17, 203, 0.08);
-        position: relative;
-        overflow: hidden;
-      }
-      
-      .demo-credentials::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 3px;
-        background: linear-gradient(90deg, #6a11cb, #2575fc);
-      }
-
-      .demo-credentials h4 {
-        color: #333;
-        margin-bottom: 10px;
-        font-size: 14px;
-      }
-
-      .demo-credentials p {
-        color: #666;
-        font-size: 13px;
-        line-height: 1.5;
-        margin-bottom: 8px;
-      }
-
-      .demo-credentials .credential {
-        background: white;
-        padding: 8px 12px;
-        border-radius: 6px;
-        margin: 5px 0;
-        font-family: monospace;
-        font-size: 13px;
-      }
-
-      .error-message {
-        background: #fee;
-        border: 1px solid #fcc;
-        color: #c33;
-        padding: 12px;
-        border-radius: 8px;
-        margin-bottom: 20px;
-        display: none;
-        font-size: 14px;
-      }
-
-      .error-message.show {
-        display: block;
-      }
-
-      .footer {
-        text-align: center;
-        margin-top: 30px;
-        padding-top: 20px;
-        border-top: 1px solid #eee;
-        color: #666;
-        font-size: 14px;
-      }
-
       @media (max-width: 768px) {
         .login-container {
           padding: 30px 25px;
@@ -302,12 +240,6 @@
 
         .logo {
           font-size: 32px;
-        }
-
-        .form-options {
-          flex-direction: column;
-          align-items: flex-start;
-          gap: 10px;
         }
       }
     </style>
@@ -355,37 +287,19 @@
           </div>
         </div>
 
-        <div class="form-options">
-          <label class="remember-me">
-            <input type="checkbox" id="remember" name="remember" />
-            Запомнить меня
-          </label>
-          <a href="#" class="forgot-password">Забыли пароль?</a>
-        </div>
+
 
         <button type="submit" class="btn-login">
           <i class="fas fa-sign-in-alt"></i> Войти в систему
         </button>
-
-
       </form>
-
-      <div class="demo-credentials">
-        <h4><i class="fas fa-info-circle"></i> Тестовые учетные данные:</h4>
-        <p>Для демонстрации используйте:</p>
-        <div class="credential">Логин: <strong>admin</strong></div>
-        <div class="credential">Пароль: <strong>admin123</strong></div>
-        <p style="margin-top: 10px; color: #888; font-size: 12px">
-          Функционал авторизации в разработке
-        </p>
-      </div>
 
       <a href="/" class="btn-back">
         <i class="fas fa-arrow-left"></i> Вернуться на главную
       </a>
 
       <div class="footer">
-        <p>Система управления складом v1.0.0</p>
+        <p>Система управления складом v1.0</p>
         <p id="server-time"></p>
       </div>
     </div>

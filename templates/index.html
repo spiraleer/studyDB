@@ -268,37 +268,15 @@
       </div>
 
       <div class="status-card">
-        <h3><i class="fas fa-heartbeat"></i> Статус системы</h3>
-        <div class="status-grid">
-          <div class="status-item">
-            <div class="status-label">База данных</div>
-            <div id="db-status" class="status-value warning">Проверка...</div>
-          </div>
-          <div class="status-item">
-            <div class="status-label">Количество товаров</div>
-            <div id="products-count" class="status-value">Проверка...</div>
-          </div>
-          <div class="status-item">
-            <div class="status-label">Количество заказов</div>
-            <div id="orders-count" class="status-value">Проверка...</div>
-          </div>
-          <div class="status-item">
-            <div class="status-label">Количество клиентов</div>
-            <div id="customers-count" class="status-value">Проверка...</div>
-          </div>
-          <div class="status-item">
-            <div class="status-label">Количество сотрудников</div>
-            <div id="employees-count" class="status-value">Проверка...</div>
-          </div>
-          <div class="status-item">
-            <div class="status-label">Низкие остатки</div>
-            <div id="low-stock-count" class="status-value warning">Проверка...</div>
-          </div>
+        <h3><i class="fas fa-database"></i> Статус базы данных</h3>
+        <div class="status-item" style="max-width: 300px; margin: 0 auto;">
+          <div class="status-label">Подключение</div>
+          <div id="db-status" class="status-value warning">Проверка...</div>
         </div>
       </div>
 
       <div class="buttons">
-        <a href="/api/docs" class="btn btn-primary">
+        <a href="/docs" class="btn btn-primary">
           <i class="fas fa-book"></i> Документация API
         </a>
         <a href="/login" class="btn btn-success">
@@ -338,23 +316,14 @@
       // Проверка статуса системы
       async function checkSystemStatus() {
         const dbStatus = document.getElementById("db-status");
-        const productsCount = document.getElementById("products-count");
-        const ordersCount = document.getElementById("orders-count");
-        const customersCount = document.getElementById("customers-count");
-        const employeesCount = document.getElementById("employees-count");
-        const lowStockCount = document.getElementById("low-stock-count");
 
         try {
-          // Проверяем статус БД
           const healthResponse = await fetch("/health");
           const healthData = await healthResponse.json();
 
           if (healthData.database && healthData.database.connected) {
             dbStatus.textContent = "✅ Подключена";
             dbStatus.className = "status-value good";
-            
-            // Получаем статистику
-            await loadStatistics();
           } else {
             dbStatus.textContent = "❌ Не доступна";
             dbStatus.className = "status-value error";
@@ -363,63 +332,6 @@
           dbStatus.textContent = "❌ Ошибка";
           dbStatus.className = "status-value error";
           console.log("Ошибка при проверке статуса:", error);
-        }
-      }
-      
-      async function loadStatistics() {
-        const productsCount = document.getElementById("products-count");
-        const ordersCount = document.getElementById("orders-count");
-        const customersCount = document.getElementById("customers-count");
-        const employeesCount = document.getElementById("employees-count");
-        const lowStockCount = document.getElementById("low-stock-count");
-        
-        // Количество товаров
-        try {
-          const productsResp = await fetch('/api/products/');
-          if (productsResp.ok) {
-            const products = await productsResp.json();
-            productsCount.textContent = products.length;
-            
-            // Подсчитываем товары с низкими остатками
-            const lowStock = products.filter(p => p.stock_quantity && p.stock_quantity < 15).length;
-            lowStockCount.textContent = lowStock;
-            lowStockCount.className = lowStock > 0 ? "status-value warning" : "status-value good";
-          }
-        } catch (e) {
-          productsCount.textContent = "Ошибка";
-        }
-        
-        // Количество заказов
-        try {
-          const ordersResp = await fetch('/api/orders/');
-          if (ordersResp.ok) {
-            const orders = await ordersResp.json();
-            ordersCount.textContent = orders.length;
-          }
-        } catch (e) {
-          ordersCount.textContent = "Ошибка";
-        }
-        
-        // Количество клиентов
-        try {
-          const customersResp = await fetch('/api/customers/');
-          if (customersResp.ok) {
-            const customers = await customersResp.json();
-            customersCount.textContent = customers.length;
-          }
-        } catch (e) {
-          customersCount.textContent = "Ошибка";
-        }
-        
-        // Количество сотрудников
-        try {
-          const employeesResp = await fetch('/api/employees/count');
-          if (employeesResp.ok) {
-            const employeesData = await employeesResp.json();
-            employeesCount.textContent = employeesData.count;
-          }
-        } catch (e) {
-          employeesCount.textContent = "Ошибка";
         }
       }
 
