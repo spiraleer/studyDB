@@ -202,9 +202,10 @@
         }
 
         .btn-small {
-            padding: 5px 10px;
-            font-size: 0.8em;
+            padding: 6px 12px;
+            font-size: 0.85em;
             margin: 0 3px;
+            border-radius: 8px;
         }
 
         /* Модальное окно */
@@ -215,31 +216,84 @@
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
             display: none;
             align-items: center;
             justify-content: center;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
 
         .modal-content {
             background: white;
-            padding: 30px;
-            border-radius: 10px;
+            padding: 0;
+            border-radius: 20px;
             width: 90%;
             max-width: 500px;
-            max-height: 80vh;
+            max-height: 85vh;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: slideUp 0.3s;
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            padding: 25px 30px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            font-size: 1.3em;
+            font-weight: 700;
+        }
+
+        .modal-body {
+            padding: 30px;
+            max-height: calc(85vh - 180px);
             overflow-y: auto;
         }
 
+        .modal-footer {
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
         .close {
-            float: right;
-            font-size: 28px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
             cursor: pointer;
-            color: #666;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
         }
 
         .close:hover {
-            color: #000;
+            background: rgba(255,255,255,0.3);
+            transform: rotate(90deg);
         }
 
         .form-group {
@@ -248,19 +302,31 @@
 
         .form-group label {
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             font-weight: 600;
-            color: #333;
+            color: #495057;
+            font-size: 14px;
         }
 
         .form-group input,
         .form-group select,
         .form-group textarea {
             width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+            padding: 12px 15px;
+            border: 2px solid #e3e6f0;
+            border-radius: 10px;
             font-size: 14px;
+            transition: all 0.3s;
+            background: #f8f9fa;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #6a11cb;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(106,17,203,0.1);
         }
 
         .form-group textarea {
@@ -435,9 +501,11 @@
     <!-- Модальное окно для создания/редактирования товара -->
     <div id="product-modal" class="modal">
         <div class="modal-content">
-            <span class="close" onclick="closeModal()">&times;</span>
-            <h3 id="modal-title">Добавить товар</h3>
-            
+            <div class="modal-header">
+                <h3 id="modal-title">Добавить товар</h3>
+                <button class="close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
             <form id="product-form">
                 <input type="hidden" id="product-id">
                 
@@ -495,15 +563,16 @@
                     </label>
                 </div>
                 
-                <div class="form-actions" style="margin-top: 20px;">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save"></i> Сохранить
-                    </button>
-                    <button type="button" class="btn btn-secondary" onclick="closeModal()">
-                        Отмена
-                    </button>
-                </div>
             </form>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" form="product-form" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Сохранить
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">
+                    Отмена
+                </button>
+            </div>
         </div>
     </div>
     {% endif %}
@@ -1915,26 +1984,26 @@
         // Defensive binder: attach click handler to deleted-toggle button immediately and retry if not present
 
     </script>
-    <!-- Universal delete confirmation modal -->
     <div id="delete-modal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeDeleteModal()">&times;</span>
-            <h3 id="delete-modal-title">Подтвердите удаление</h3>
-            <p id="delete-modal-body">Вы уверены?</p>
-
-            <div class="form-group">
-                <label for="delete-hard-checkbox">
-                    <input type="checkbox" id="delete-hard-checkbox"> Жёсткое удаление (удаление из базы)
-                </label>
+        <div class="modal-content" style="max-width: 450px;">
+            <div class="modal-header">
+                <h3 id="delete-modal-title">Подтвердите удаление</h3>
+                <button class="close" onclick="closeDeleteModal()">&times;</button>
             </div>
-
-            <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
+            <div class="modal-body">
+                <p id="delete-modal-body">Вы уверены?</p>
+                <div class="form-group">
+                    <label for="delete-hard-checkbox">
+                        <input type="checkbox" id="delete-hard-checkbox"> Жёсткое удаление (удаление из базы)
+                    </label>
+                </div>
+                <input type="hidden" id="delete-target-id">
+                <input type="hidden" id="delete-target-type">
+            </div>
+            <div class="modal-footer">
                 <button id="delete-confirm-btn" class="btn btn-danger">Удалить</button>
                 <button id="delete-cancel-btn" class="btn btn-secondary">Отмена</button>
             </div>
-
-            <input type="hidden" id="delete-target-id">
-            <input type="hidden" id="delete-target-type">
         </div>
     </div>
     {% if table_name == 'product' %}
@@ -1952,11 +2021,13 @@
     </div>
     {% endif %}
     {% if table_name == 'category' %}
-    <!-- Category modal -->
     <div id="category-modal" class="modal">
         <div class="modal-content">
-            <span class="close" onclick="closeModal()">&times;</span>
-            <h3 id="category-modal-title">Добавить категорию</h3>
+            <div class="modal-header">
+                <h3 id="category-modal-title">Добавить категорию</h3>
+                <button class="close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
             <form id="category-form">
                 <input type="hidden" id="category-id">
                 <div class="form-group">
@@ -1967,22 +2038,24 @@
                     <label for="category-description">Описание</label>
                     <textarea id="category-description" rows="3"></textarea>
                 </div>
-                <div class="form-actions" style="margin-top: 20px;">
-                    <button type="submit" class="btn btn-primary">Сохранить</button>
-                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Отмена</button>
-                </div>
             </form>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" form="category-form" class="btn btn-primary">Сохранить</button>
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">Отмена</button>
+            </div>
         </div>
     </div>
     {% endif %}
     
     {% if table_name == 'orders' %}
-    <!-- Модальное окно для создания заказа -->
     <div id="order-modal" class="modal">
         <div class="modal-content" style="max-width: 800px;">
-            <span class="close" onclick="closeModal()">&times;</span>
-            <h3 id="order-modal-title">Создать заказ</h3>
-            
+            <div class="modal-header">
+                <h3 id="order-modal-title">Создать заказ</h3>
+                <button class="close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
             <form id="order-form">
                 <input type="hidden" id="order-id">
                 
@@ -2035,25 +2108,26 @@
                 <div class="form-group">
                     <strong>Итого: <span id="order-total">0.00</span> ₽</strong>
                 </div>
-                
-                <div class="form-actions" style="margin-top: 20px;">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save"></i> Создать заказ
-                    </button>
-                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Отмена</button>
-                </div>
             </form>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" form="order-form" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Создать заказ
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">Отмена</button>
+            </div>
         </div>
     </div>
     {% endif %}
     
     {% if table_name == 'customer' %}
-    <!-- Модальное окно для клиентов -->
     <div id="customer-modal" class="modal">
         <div class="modal-content">
-            <span class="close" onclick="closeModal()">&times;</span>
-            <h3 id="customer-modal-title">Добавить клиента</h3>
-            
+            <div class="modal-header">
+                <h3 id="customer-modal-title">Добавить клиента</h3>
+                <button class="close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
             <form id="customer-form">
                 <input type="hidden" id="customer-id">
                 
@@ -2082,24 +2156,26 @@
                     <textarea id="customer-notes" rows="3"></textarea>
                 </div>
                 
-                <div class="form-actions" style="margin-top: 20px;">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save"></i> Сохранить
-                    </button>
-                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Отмена</button>
-                </div>
             </form>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" form="customer-form" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Сохранить
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">Отмена</button>
+            </div>
         </div>
     </div>
     {% endif %}
     
     {% if table_name == 'supplier' %}
-    <!-- Модальное окно для поставщиков -->
     <div id="supplier-modal" class="modal">
         <div class="modal-content">
-            <span class="close" onclick="closeModal()">&times;</span>
-            <h3 id="supplier-modal-title">Добавить поставщика</h3>
-            
+            <div class="modal-header">
+                <h3 id="supplier-modal-title">Добавить поставщика</h3>
+                <button class="close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
             <form id="supplier-form">
                 <input type="hidden" id="supplier-id">
                 
@@ -2138,14 +2214,14 @@
                         <input type="checkbox" id="supplier-active" checked> Активен
                     </label>
                 </div>
-                
-                <div class="form-actions" style="margin-top: 20px;">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save"></i> Сохранить
-                    </button>
-                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Отмена</button>
-                </div>
             </form>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" form="supplier-form" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Сохранить
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">Отмена</button>
+            </div>
         </div>
     </div>
     {% endif %}
@@ -2153,8 +2229,11 @@
     {% if table_name == 'purchase' %}
     <div id="purchase-modal" class="modal">
         <div class="modal-content" style="max-width: 900px;">
-            <span class="close" onclick="closeModal()">&times;</span>
-            <h3 id="purchase-modal-title">Создать закупку</h3>
+            <div class="modal-header">
+                <h3 id="purchase-modal-title">Создать закупку</h3>
+                <button class="close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
             <form id="purchase-form">
                 <input type="hidden" id="purchase-id">
                 <div class="form-group">
@@ -2195,13 +2274,14 @@
                 <div class="form-group" style="margin-top: 20px;">
                     <strong>Итого: <span id="purchase-total">0.00</span> ₽</strong>
                 </div>
-                <div class="form-actions" style="margin-top: 20px;">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save"></i> Сохранить
-                    </button>
-                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Отмена</button>
-                </div>
             </form>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" form="purchase-form" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Сохранить
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">Отмена</button>
+            </div>
         </div>
     </div>
     {% endif %}
