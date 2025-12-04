@@ -5,6 +5,8 @@ from pydantic import BaseModel
 from datetime import datetime
 from models.database import get_db
 from models.tables import Payment, Orders, Employee, Customer, OrderItem, Product
+from dependencies import require_permission
+from core.permissions import PermissionCode
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
 from reportlab.pdfgen import canvas
@@ -33,7 +35,10 @@ class PaymentUpdate(BaseModel):
     notes: str = None
 
 @router.get("/")
-def get_payments(db: Session = Depends(get_db)):
+def get_payments(
+    db: Session = Depends(get_db),
+    current_user = Depends(require_permission(PermissionCode.ORDERS_VIEW))
+):
     payments = db.query(Payment).all()
     result = []
     for p in payments:
@@ -57,7 +62,11 @@ def get_payments(db: Session = Depends(get_db)):
     return result
 
 @router.get("/{payment_id}")
-def get_payment(payment_id: int, db: Session = Depends(get_db)):
+def get_payment(
+    payment_id: int,
+    db: Session = Depends(get_db),
+    current_user = Depends(require_permission(PermissionCode.ORDERS_VIEW))
+):
     payment = db.query(Payment).filter(Payment.payment_id == payment_id).first()
     if not payment:
         raise HTTPException(status_code=404, detail="Payment not found")
@@ -75,7 +84,11 @@ def get_payment(payment_id: int, db: Session = Depends(get_db)):
     }
 
 @router.post("/")
-def create_payment(payment: PaymentCreate, db: Session = Depends(get_db)):
+def create_payment(
+    payment: PaymentCreate,
+    db: Session = Depends(get_db),
+    current_user = Depends(require_permission(PermissionCode.ORDERS_CREATE))
+):
     new_payment = Payment(
         order_id=payment.order_id,
         amount=payment.amount,
@@ -91,7 +104,12 @@ def create_payment(payment: PaymentCreate, db: Session = Depends(get_db)):
     return {"payment_id": new_payment.payment_id}
 
 @router.put("/{payment_id}")
-def update_payment(payment_id: int, payment: PaymentUpdate, db: Session = Depends(get_db)):
+def update_payment(
+    payment_id: int,
+    payment: PaymentUpdate,
+    db: Session = Depends(get_db),
+    current_user = Depends(require_permission(PermissionCode.ORDERS_EDIT))
+):
     db_payment = db.query(Payment).filter(Payment.payment_id == payment_id).first()
     if not db_payment:
         raise HTTPException(status_code=404, detail="Payment not found")
@@ -111,7 +129,11 @@ def update_payment(payment_id: int, payment: PaymentUpdate, db: Session = Depend
     return {"message": "Payment updated"}
 
 @router.delete("/{payment_id}")
-def delete_payment(payment_id: int, db: Session = Depends(get_db)):
+def delete_payment(
+    payment_id: int,
+    db: Session = Depends(get_db),
+    current_user = Depends(require_permission(PermissionCode.ORDERS_EDIT))
+):
     payment = db.query(Payment).filter(Payment.payment_id == payment_id).first()
     if not payment:
         raise HTTPException(status_code=404, detail="Payment not found")
@@ -121,12 +143,19 @@ def delete_payment(payment_id: int, db: Session = Depends(get_db)):
     return {"message": "Payment deleted"}
 
 @router.get("/orders/list")
-def get_orders(db: Session = Depends(get_db)):
+def get_orders(
+    db: Session = Depends(get_db),
+    current_user = Depends(require_permission(PermissionCode.ORDERS_VIEW))
+):
     orders = db.query(Orders).all()
     return [{"order_id": o.order_id, "order_code": o.order_code, "total_amount": float(o.total_amount)} for o in orders]
 
 @router.get("/{payment_id}/pdf")
-def download_payment_pdf(payment_id: int, db: Session = Depends(get_db)):
+def download_payment_pdf(
+    payment_id: int,
+    db: Session = Depends(get_db),
+    current_user = Depends(require_permission(PermissionCode.ORDERS_VIEW))
+):
     payment = db.query(Payment).filter(Payment.payment_id == payment_id).first()
     if not payment:
         raise HTTPException(status_code=404, detail="Payment not found")

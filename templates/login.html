@@ -441,12 +441,14 @@
             if (response.ok) {
               // Успешный вход
               const responseData = await response.json();
-              // Сохраняем session_token и employee_id в localStorage
+              // Очищаем старые данные и сохраняем новые
+              localStorage.clear();
               if (responseData.session_token) {
                 localStorage.setItem('session_token', responseData.session_token);
               }
               if (responseData.employee_id) {
                 localStorage.setItem('employee_id', responseData.employee_id);
+                document.cookie = `employee_id=${responseData.employee_id}; path=/; max-age=86400`;
               }
               
               errorText.textContent = "Успешный вход! Перенаправление...";

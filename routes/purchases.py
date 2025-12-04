@@ -6,6 +6,8 @@ from datetime import date, datetime
 from pydantic import BaseModel
 from models.database import get_db
 from models.tables import Purchase, PurchaseItem, Product, Supplier, Employee, StockMovement
+from dependencies import require_permission
+from core.permissions import PermissionCode
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
 from reportlab.pdfgen import canvas
@@ -42,7 +44,10 @@ class PurchaseUpdate(BaseModel):
     notes: str = None
 
 @router.get("/")
-def get_purchases(db: Session = Depends(get_db)):
+def get_purchases(
+    db: Session = Depends(get_db),
+    current_user = Depends(require_permission(PermissionCode.PURCHASES_VIEW))
+):
     purchases = db.query(Purchase).all()
     result = []
     for p in purchases:
@@ -66,7 +71,11 @@ def get_purchases(db: Session = Depends(get_db)):
     return result
 
 @router.get("/{purchase_id}")
-def get_purchase(purchase_id: int, db: Session = Depends(get_db)):
+def get_purchase(
+    purchase_id: int,
+    db: Session = Depends(get_db),
+    current_user = Depends(require_permission(PermissionCode.PURCHASES_VIEW))
+):
     purchase = db.query(Purchase).filter(Purchase.purchase_id == purchase_id).first()
     if not purchase:
         raise HTTPException(status_code=404, detail="Purchase not found")
@@ -100,7 +109,11 @@ def get_purchase(purchase_id: int, db: Session = Depends(get_db)):
     }
 
 @router.post("/")
-def create_purchase(purchase: PurchaseCreate, db: Session = Depends(get_db)):
+def create_purchase(
+    purchase: PurchaseCreate,
+    db: Session = Depends(get_db),
+    current_user = Depends(require_permission(PermissionCode.PURCHASES_CREATE))
+):
     total = sum(item.quantity * item.unit_price for item in purchase.items)
     
     new_purchase = Purchase(
@@ -143,7 +156,12 @@ def create_purchase(purchase: PurchaseCreate, db: Session = Depends(get_db)):
     return {"purchase_id": new_purchase.purchase_id}
 
 @router.put("/{purchase_id}")
-def update_purchase(purchase_id: int, purchase: PurchaseUpdate, db: Session = Depends(get_db)):
+def update_purchase(
+    purchase_id: int,
+    purchase: PurchaseUpdate,
+    db: Session = Depends(get_db),
+    current_user = Depends(require_permission(PermissionCode.PURCHASES_CREATE))
+):
     db_purchase = db.query(Purchase).filter(Purchase.purchase_id == purchase_id).first()
     if not db_purchase:
         raise HTTPException(status_code=404, detail="Purchase not found")
@@ -183,7 +201,11 @@ def update_purchase(purchase_id: int, purchase: PurchaseUpdate, db: Session = De
     return {"message": "Purchase updated"}
 
 @router.delete("/{purchase_id}")
-def delete_purchase(purchase_id: int, db: Session = Depends(get_db)):
+def delete_purchase(
+    purchase_id: int,
+    db: Session = Depends(get_db),
+    current_user = Depends(require_permission(PermissionCode.PURCHASES_CREATE))
+):
     purchase = db.query(Purchase).filter(Purchase.purchase_id == purchase_id).first()
     if not purchase:
         raise HTTPException(status_code=404, detail="Purchase not found")
@@ -194,17 +216,27 @@ def delete_purchase(purchase_id: int, db: Session = Depends(get_db)):
     return {"message": "Purchase deleted"}
 
 @router.get("/suppliers/list")
-def get_suppliers(db: Session = Depends(get_db)):
+def get_suppliers(
+    db: Session = Depends(get_db),
+    current_user = Depends(require_permission(PermissionCode.PURCHASES_VIEW))
+):
     suppliers = db.query(Supplier).filter(Supplier.is_active == True).all()
     return [{"supplier_id": s.supplier_id, "company_name": s.company_name} for s in suppliers]
 
 @router.get("/products/list")
-def get_products(db: Session = Depends(get_db)):
+def get_products(
+    db: Session = Depends(get_db),
+    current_user = Depends(require_permission(PermissionCode.PURCHASES_VIEW))
+):
     products = db.query(Product).filter(Product.is_active == True).all()
     return [{"product_id": p.product_id, "product_name": p.product_name, "price": float(p.price)} for p in products]
 
 @router.get("/{purchase_id}/pdf")
-def download_purchase_pdf(purchase_id: int, db: Session = Depends(get_db)):
+def download_purchase_pdf(
+    purchase_id: int,
+    db: Session = Depends(get_db),
+    current_user = Depends(require_permission(PermissionCode.PURCHASES_VIEW))
+):
     purchase = db.query(Purchase).filter(Purchase.purchase_id == purchase_id).first()
     if not purchase:
         raise HTTPException(status_code=404, detail="Purchase not found")

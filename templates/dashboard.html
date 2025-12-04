@@ -467,8 +467,8 @@
                     console.log('Logout notification sent');
                 }
             }
-            localStorage.removeItem('session_token');
-            localStorage.removeItem('employee_id');
+            localStorage.clear();
+            document.cookie = 'employee_id=; path=/; max-age=0';
             window.location.href = '/login';
         }
         
