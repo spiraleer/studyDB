@@ -271,6 +271,10 @@
                     <button onclick="showCreateCustomerForm()" class="btn btn-success">
                         <i class="fas fa-plus"></i> Добавить клиента
                     </button>
+                    {% elif table_name == 'supplier' %}
+                    <button onclick="showCreateSupplierForm()" class="btn btn-success">
+                        <i class="fas fa-plus"></i> Добавить поставщика
+                    </button>
                     {% endif %}
                     <button onclick="refreshTable()" class="btn btn-secondary">
                         <i class="fas fa-sync-alt"></i> Обновить
@@ -341,6 +345,13 @@
                                 {% elif table_name == 'orders' %}
                                 <button onclick="editOrder({{ row.order_id }})" class="btn btn-warning btn-small">
                                     <i class="fas fa-edit"></i>
+                                </button>
+                                {% elif table_name == 'supplier' %}
+                                <button onclick="editSupplier({{ row.supplier_id }})" class="btn btn-warning btn-small">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button onclick="deleteSupplier({{ row.supplier_id }})" class="btn btn-danger btn-small">
+                                    <i class="fas fa-trash"></i>
                                 </button>
                                 {% endif %}
                             </td>
@@ -683,30 +694,8 @@
         // Category form submit (guarded) - will be attached in DOMContentLoaded
         // Обновить таблицу
         async function refreshTable() {
-            try {
-                let url;
-                if (__INIT_DATA.is_product) {
-                    url = '/api/products/?limit=50';
-                } else if (__INIT_DATA.is_category) {
-                    url = '/api/categories/';
-                } else if (__INIT_DATA.table_name === 'orders') {
-                    url = '/api/orders/';
-                } else if (__INIT_DATA.table_name === 'customer') {
-                    url = '/api/customers/';
-                } else {
-                    // Для других таблиц перезагружаем страницу
-                    window.location.reload();
-                    return;
-                }
-
-                const response = await fetch(url);
-                if (response.ok) {
-                    const items = await response.json();
-                    renderTable(items);
-                }
-            } catch (error) {
-                console.error('Ошибка обновления таблицы:', error);
-            }
+            // Перезагружаем всю страницу для полного обновления
+            window.location.reload();
         }
 
         // --- Deleted products menu helpers (product page) ---
@@ -938,6 +927,21 @@
 
                     actionsTd.appendChild(editBtn);
                     actionsTd.appendChild(delBtn);
+                } else if (__INIT_DATA.table_name === 'supplier') {
+                    const editBtn = document.createElement('button');
+                    editBtn.className = 'btn btn-warning btn-small';
+                    editBtn.title = 'Редактировать';
+                    editBtn.innerHTML = '<i class="fas fa-edit"></i>';
+                    editBtn.addEventListener('click', () => editSupplier(product.supplier_id));
+
+                    const delBtn = document.createElement('button');
+                    delBtn.className = 'btn btn-danger btn-small';
+                    delBtn.title = 'Удалить';
+                    delBtn.innerHTML = '<i class="fas fa-trash"></i>';
+                    delBtn.addEventListener('click', () => deleteSupplier(product.supplier_id));
+
+                    actionsTd.appendChild(editBtn);
+                    actionsTd.appendChild(delBtn);
                 }
                 tr.appendChild(actionsTd);
 
@@ -955,6 +959,8 @@
             if (orderModal) orderModal.style.display = 'none';
             const customerModal = document.getElementById('customer-modal');
             if (customerModal) customerModal.style.display = 'none';
+            const supplierModal = document.getElementById('supplier-modal');
+            if (supplierModal) supplierModal.style.display = 'none';
         }
 
         // Закрытие модального окна при клике вне его
@@ -1185,6 +1191,58 @@
             }
         }
         
+        // Функции для поставщиков
+        async function showCreateSupplierForm() {
+            document.getElementById('supplier-modal-title').textContent = 'Добавить поставщика';
+            document.getElementById('supplier-form').reset();
+            document.getElementById('supplier-id').value = '';
+            document.getElementById('supplier-active').checked = true;
+            document.getElementById('supplier-modal').style.display = 'flex';
+        }
+        
+        async function editSupplier(supplierId) {
+            try {
+                const response = await fetch(`/api/suppliers/${supplierId}`);
+                if (response.ok) {
+                    const supplier = await response.json();
+                    
+                    document.getElementById('supplier-modal-title').textContent = 'Редактировать поставщика';
+                    document.getElementById('supplier-id').value = supplier.supplier_id;
+                    document.getElementById('supplier-company-name').value = supplier.company_name || '';
+                    document.getElementById('supplier-inn').value = supplier.inn || '';
+                    document.getElementById('supplier-kpp').value = supplier.kpp || '';
+                    document.getElementById('supplier-address').value = supplier.address || '';
+                    document.getElementById('supplier-contact-phone').value = supplier.contact_phone || '';
+                    document.getElementById('supplier-contact-email').value = supplier.contact_email || '';
+                    document.getElementById('supplier-active').checked = !!supplier.is_active;
+                    
+                    document.getElementById('supplier-modal').style.display = 'flex';
+                }
+            } catch (error) {
+                alert('Ошибка загрузки поставщика');
+            }
+        }
+        
+        async function deleteSupplier(supplierId) {
+            if (!confirm('Удалить поставщика?')) return;
+            
+            try {
+                const response = await fetch(`/api/suppliers/${supplierId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    alert('Поставщик удален');
+                    refreshTable();
+                } else {
+                    const error = await response.json();
+                    alert('Ошибка: ' + (error.detail || 'Неизвестная ошибка'));
+                }
+            } catch (error) {
+                alert('Ошибка соединения');
+            }
+        }
+        
         // Очистить все сессии
         async function clearAllSessions() {
             if (!confirm('Удалить все сессии? Это действие нельзя отменить.')) return;
@@ -1267,6 +1325,55 @@
             if (deletedToggleBtn) deletedToggleBtn.addEventListener('click', function(e){ e.preventDefault(); toggleDeletedMenu(); });
 
             // Initialize appropriate features depending on table
+            // Обработчик формы поставщиков
+            const supplierFormEl = document.getElementById('supplier-form');
+            if (supplierFormEl) {
+                supplierFormEl.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    const supplierId = document.getElementById('supplier-id').value;
+                    const isEdit = !!supplierId;
+                    
+                    const supplierData = {
+                        company_name: document.getElementById('supplier-company-name').value,
+                        inn: document.getElementById('supplier-inn').value || undefined,
+                        kpp: document.getElementById('supplier-kpp').value || undefined,
+                        address: document.getElementById('supplier-address').value || undefined,
+                        contact_phone: document.getElementById('supplier-contact-phone').value || undefined,
+                        contact_email: document.getElementById('supplier-contact-email').value || undefined,
+                        is_active: document.getElementById('supplier-active').checked
+                    };
+                    
+                    Object.keys(supplierData).forEach(key => {
+                        if (supplierData[key] === undefined || supplierData[key] === '') {
+                            delete supplierData[key];
+                        }
+                    });
+                    
+                    try {
+                        const url = isEdit ? `/api/suppliers/${supplierId}` : '/api/suppliers/';
+                        const method = isEdit ? 'PUT' : 'POST';
+                        
+                        const response = await fetch(url, {
+                            method: method,
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(supplierData)
+                        });
+                        
+                        if (response.ok) {
+                            alert(isEdit ? 'Поставщик обновлен' : 'Поставщик создан');
+                            closeModal();
+                            refreshTable();
+                        } else {
+                            const error = await response.json();
+                            alert('Ошибка: ' + (error.detail || 'Неизвестная ошибка'));
+                        }
+                    } catch (error) {
+                        alert('Ошибка соединения');
+                    }
+                });
+            }
+            
             // Обработчик формы клиентов
             const customerFormEl = document.getElementById('customer-form');
             if (customerFormEl) {
@@ -1583,6 +1690,63 @@
                 <div class="form-group">
                     <label for="customer-notes">Примечания</label>
                     <textarea id="customer-notes" rows="3"></textarea>
+                </div>
+                
+                <div class="form-actions" style="margin-top: 20px;">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Сохранить
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Отмена</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if table_name == 'supplier' %}
+    <!-- Модальное окно для поставщиков -->
+    <div id="supplier-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h3 id="supplier-modal-title">Добавить поставщика</h3>
+            
+            <form id="supplier-form">
+                <input type="hidden" id="supplier-id">
+                
+                <div class="form-group">
+                    <label for="supplier-company-name">Название компании *</label>
+                    <input type="text" id="supplier-company-name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="supplier-inn">ИНН</label>
+                    <input type="text" id="supplier-inn">
+                </div>
+                
+                <div class="form-group">
+                    <label for="supplier-kpp">КПП</label>
+                    <input type="text" id="supplier-kpp">
+                </div>
+                
+                <div class="form-group">
+                    <label for="supplier-address">Адрес</label>
+                    <textarea id="supplier-address" rows="2"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="supplier-contact-phone">Контактный телефон</label>
+                    <input type="tel" id="supplier-contact-phone">
+                </div>
+                
+                <div class="form-group">
+                    <label for="supplier-contact-email">Контактная почта</label>
+                    <input type="email" id="supplier-contact-email">
+                </div>
+                
+                <div class="form-group">
+                    <label for="supplier-active">
+                        <input type="checkbox" id="supplier-active" checked> Активен
+                    </label>
                 </div>
                 
                 <div class="form-actions" style="margin-top: 20px;">
