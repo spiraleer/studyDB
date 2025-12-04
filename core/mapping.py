@@ -15,6 +15,11 @@ TABLE_NAMES_MAPPING = {
     "inventory_transaction": "Транзакции склада",
     "audit_log": "Журнал аудита",
     "user_session": "Сессии пользователей",
+    "payment": "Платежи",
+    "purchase": "Закупки",
+    "purchase_item": "Позиции закупок",
+    "price_history": "История цен",
+    "stock_movement": "Движение товаров",
 }
 
 # Соответствие технического имени столбца русскому названию
@@ -86,6 +91,22 @@ COLUMN_NAMES_MAPPING = {
     "session_token": "Токен сессии",
     "login_time": "Время входа",
     "logout_time": "Время выхода",
+    
+    # Дополнительные поля
+    "barcode": "Штрихкод",
+    "weight": "Вес",
+    "phone": "Телефон",
+    "email": "Эл. почта",
+    "address": "Адрес",
+    "inn": "ИНН",
+    "kpp": "КПП",
+    "contact_phone": "Контактный телефон",
+    "contact_email": "Контактная почта",
+    "created_by_employee_id": "Создал (сотрудник)",
+    "updated_by_employee_id": "Обновил (сотрудник)",
+    "loyalty_card_number": "Номер карты лояльности",
+    "registration_date": "Дата регистрации",
+    "notes": "Примечания",
 }
 
 # Маппинг таблиц на иконки Font Awesome
