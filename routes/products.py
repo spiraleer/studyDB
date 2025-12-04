@@ -166,18 +166,47 @@ async def update_product(
     
     # Обновляем поля (с преобразованием float -> Decimal для price и weight)
     from decimal import Decimal
+    from models.tables import PriceHistory
+    from sqlalchemy import text
+    
+    old_price = product.price
     update_data = product_data.model_dump(exclude_unset=True)
-    for field, value in update_data.items():
-        if value is not None:  # Проверяем, что значение не None
-            # Для полей price и weight применяем преобразование float -> Decimal
-            if field in ('price', 'weight') and isinstance(value, (int, float)):
-                value = Decimal(str(value))
-            setattr(product, field, value)
+    price_changed = False
     
-    # Обновляем ID сотрудника, который внес изменения
-    product.updated_by_employee_id = current_user.employee_id
+    try:
+        db.execute(text("SET session_replication_role = 'replica'"))
+        
+        for field, value in update_data.items():
+            if value is not None:
+                if field in ('price', 'weight') and isinstance(value, (int, float)):
+                    value = Decimal(str(value))
+                if field == 'price' and value != old_price:
+                    price_changed = True
+                setattr(product, field, value)
+        
+        product.updated_by_employee_id = current_user.employee_id
+        db.commit()
+        
+        db.execute(text("SET session_replication_role = 'origin'"))
+        
+        if price_changed:
+            price_history = PriceHistory(
+                product_id=product_id,
+                old_price=old_price,
+                new_price=product.price,
+                changed_by_employee_id=current_user.employee_id,
+                reason="Изменение цены"
+            )
+            db.add(price_history)
+            db.commit()
+    except Exception:
+        db.rollback()
+        try:
+            db.execute(text("SET session_replication_role = 'origin'"))
+        except:
+            pass
+        raise
     
-    db.commit()
     db.refresh(product)
     
     return product
