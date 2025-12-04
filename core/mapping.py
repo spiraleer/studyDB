@@ -80,6 +80,12 @@ COLUMN_NAMES_MAPPING = {
     "new_values": "Новые значения",
     "ip_address": "IP-адрес",
     "user_agent": "User Agent",
+    
+    # user_session
+    "session_id": "ID Сессии",
+    "session_token": "Токен сессии",
+    "login_time": "Время входа",
+    "logout_time": "Время выхода",
 }
 
 # Маппинг таблиц на иконки Font Awesome

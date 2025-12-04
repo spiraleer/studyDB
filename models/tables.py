@@ -1,5 +1,6 @@
 # models/tables.py
 from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime, Date, ForeignKey, Text, DECIMAL, JSON
+from sqlalchemy.dialects.postgresql import INET
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from .database import Base
@@ -283,7 +284,7 @@ class UserSession(Base):
     session_token = Column(String(255), unique=True, nullable=False)
     login_time = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     logout_time = Column(DateTime(timezone=True))
-    ip_address = Column(String(50))
+    ip_address = Column(INET)
     user_agent = Column(Text)
     is_active = Column(Boolean, default=True)
     

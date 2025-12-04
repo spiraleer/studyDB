@@ -63,6 +63,14 @@ async def table_view(
     column_names = [col.key for col in inspect(ModelClass).mapper.columns]
     display_column_names = [get_russian_name(col, 'column') for col in column_names]
 
+    # Получаем имя первичного ключа
+    pk_column = None
+    for col in inspect(ModelClass).mapper.columns:
+        if col.primary_key:
+            pk_column = col.key
+            break
+    pk_column = pk_column or 'id'
+
     records = db.query(ModelClass).limit(50).all()
     data = [
         {col_name: getattr(record, col_name) if getattr(record, col_name) is not None else 'NULL'
@@ -81,5 +89,6 @@ async def table_view(
             "display_column_names": display_column_names,
             "data": data,
             "total_rows": total_rows,
+            "pk_column": pk_column,
         }
     )

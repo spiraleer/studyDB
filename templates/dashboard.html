@@ -111,6 +111,29 @@
             font-weight: 600;
         }
     </style>
+    <script>
+        async function logout() {
+            const token = localStorage.getItem('session_token');
+            const employeeId = localStorage.getItem('employee_id');
+            if (token && employeeId) {
+                try {
+                    await fetch('/api/auth/logout', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            session_token: token,
+                            employee_id: parseInt(employeeId)
+                        })
+                    });
+                } catch (e) {
+                    console.log('Logout notification sent');
+                }
+            }
+            localStorage.removeItem('session_token');
+            localStorage.removeItem('employee_id');
+            window.location.href = '/login';
+        }
+    </script>
 </head>
 <body>
     <div class="content">
@@ -118,9 +141,9 @@
             <h1><i class="fas fa-warehouse"></i> Панель управления</h1>
             <div>
                 <span style="font-weight: 600; margin-right: 15px;">Пользователь: {{ employee_login }}</span>
-                <a href="/login" class="logout-btn">
+                <button onclick="logout()" class="logout-btn">
                     <i class="fas fa-sign-out-alt"></i> Выход
-                </a>
+                </button>
             </div>
         </div>
 

@@ -403,6 +403,15 @@
 
             if (response.ok) {
               // Успешный вход
+              const responseData = await response.json();
+              // Сохраняем session_token и employee_id в localStorage
+              if (responseData.session_token) {
+                localStorage.setItem('session_token', responseData.session_token);
+              }
+              if (responseData.employee_id) {
+                localStorage.setItem('employee_id', responseData.employee_id);
+              }
+              
               errorText.textContent = "Успешный вход! Перенаправление...";
               errorDiv.style.background = "#e8f7ee";
               errorDiv.style.borderColor = "#c3e6cb";
