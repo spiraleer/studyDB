@@ -1,0 +1,255 @@
+/* Темная тема */
+:root.dark-theme {
+    --bg-primary: #1a1a1a;
+    --bg-secondary: #2d2d2d;
+    --bg-card: #333333;
+    --text-primary: #ffffff;
+    --text-secondary: #e0e0e0;
+    --text-muted: #b0b0b0;
+    --border-color: #444444;
+    --shadow: rgba(0, 0, 0, 0.5);
+}
+
+.dark-theme body {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%) !important;
+    color: var(--text-primary) !important;
+}
+
+.dark-theme .container,
+.dark-theme .login-container,
+.dark-theme .card {
+    background: rgba(51, 51, 51, 0.95) !important;
+    color: var(--text-primary) !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+.dark-theme .header {
+    background: var(--bg-card) !important;
+    color: var(--text-primary) !important;
+}
+
+.dark-theme .table-item,
+.dark-theme .status-item,
+.dark-theme .overview-item {
+    background: linear-gradient(135deg, #333333 0%, #404040 100%) !important;
+    color: var(--text-primary) !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+.dark-theme .data-table {
+    background: var(--bg-card) !important;
+    color: var(--text-primary) !important;
+}
+
+.dark-theme .data-table th {
+    background-color: #404040 !important;
+    color: var(--text-primary) !important;
+}
+
+.dark-theme .data-table td {
+    color: var(--text-primary) !important;
+    border-bottom: 1px solid var(--border-color) !important;
+}
+
+.dark-theme .data-table tr:nth-child(even) {
+    background-color: #3a3a3a !important;
+}
+
+.dark-theme .modal-content {
+    background: var(--bg-card) !important;
+    color: var(--text-primary) !important;
+}
+
+.dark-theme input,
+.dark-theme select,
+.dark-theme textarea {
+    background: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+    border: 2px solid var(--border-color) !important;
+}
+
+.dark-theme input::placeholder,
+.dark-theme textarea::placeholder {
+    color: var(--text-muted) !important;
+}
+
+.dark-theme input:focus,
+.dark-theme select:focus,
+.dark-theme textarea:focus {
+    background: var(--bg-card) !important;
+    border-color: #6a11cb !important;
+}
+
+.dark-theme .btn-secondary,
+.dark-theme .btn-back {
+    background: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+    border: 2px solid var(--border-color) !important;
+}
+
+.dark-theme .demo-credentials,
+.dark-theme .status-card {
+    background: linear-gradient(135deg, #2d2d2d 0%, #333333 100%) !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+.dark-theme .error-message {
+    background: #4a1a1a !important;
+    border: 1px solid #6a2c2c !important;
+    color: #ff6b6b !important;
+}
+
+.dark-theme .info-bar {
+    background: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+.dark-theme .chart-panel h4,
+.dark-theme .card-header,
+.dark-theme h1, .dark-theme h2, .dark-theme h3, .dark-theme h4 {
+    color: var(--text-primary) !important;
+}
+
+.dark-theme .tab-btn {
+    color: var(--text-secondary) !important;
+}
+
+.dark-theme .tab-btn.active {
+    color: #6a11cb !important;
+}
+
+.dark-theme .pie-item {
+    background: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+.dark-theme .pie-label {
+    color: var(--text-primary) !important;
+}
+
+.dark-theme .pie-value {
+    color: var(--text-secondary) !important;
+}
+
+.dark-theme .bar-container {
+    background: var(--bg-secondary) !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+.dark-theme .bar-label {
+    color: var(--text-primary) !important;
+}
+
+.dark-theme .bar-value {
+    color: var(--text-primary) !important;
+}
+
+.dark-theme .footer {
+    color: var(--text-secondary) !important;
+    border-top: 1px solid var(--border-color) !important;
+}
+
+.dark-theme .tagline,
+.dark-theme .subtitle {
+    color: var(--text-secondary) !important;
+}
+
+.dark-theme .overview-title,
+.dark-theme .status-label {
+    color: var(--text-secondary) !important;
+}
+
+.dark-theme .overview-value,
+.dark-theme .status-value {
+    color: var(--text-primary) !important;
+}
+
+.dark-theme .overview-desc {
+    color: var(--text-secondary) !important;
+}
+
+.dark-theme .status-value.good {
+    color: #4ade80 !important;
+}
+
+.dark-theme .status-value.warning {
+    color: #facc15 !important;
+}
+
+.dark-theme .status-value.error {
+    color: #f87171 !important;
+}
+
+.dark-theme .status-active {
+    color: #4ade80 !important;
+}
+
+.dark-theme .status-inactive {
+    color: #f87171 !important;
+}
+
+.dark-theme .table-item small {
+    color: var(--text-secondary) !important;
+}
+
+.dark-theme .form-group label {
+    color: var(--text-primary) !important;
+}
+
+.dark-theme .remember-me {
+    color: var(--text-secondary) !important;
+}
+
+.dark-theme .forgot-password {
+    color: #6a11cb !important;
+}
+
+.dark-theme .close {
+    color: var(--text-primary) !important;
+}
+
+.dark-theme .close:hover {
+    color: var(--text-primary) !important;
+}
+
+.dark-theme .modal-content h3,
+.dark-theme .modal-content h4,
+.dark-theme .modal-content p {
+    color: var(--text-primary) !important;
+}
+
+.dark-theme .demo-credentials h4 {
+    color: var(--text-primary) !important;
+}
+
+.dark-theme .demo-credentials p {
+    color: var(--text-secondary) !important;
+}
+
+.dark-theme .demo-credentials .credential {
+    background: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+.dark-theme .data-table-container::-webkit-scrollbar-track {
+    background: var(--bg-secondary) !important;
+}
+
+.dark-theme .data-table-container::-webkit-scrollbar-thumb {
+    background: #6a11cb !important;
+}
+
+.dark-theme .data-table-container::-webkit-scrollbar-thumb:hover {
+    background: #2575fc !important;
+}
+
+.dark-theme .data-table th:hover {
+    background-color: var(--bg-card) !important;
+}
+
+.dark-theme .btn-back:hover {
+    background: var(--bg-card) !important;
+}
