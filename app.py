@@ -16,6 +16,7 @@ from routes import customers
 from routes import suppliers
 from routes import employees
 from routes import purchases
+from routes import audit
 
 # Импортируем функции для работы с БД
 from models.database import check_database_connection, get_db, create_tables, engine
@@ -42,6 +43,7 @@ app.include_router(customers.router)
 app.include_router(suppliers.router)
 app.include_router(employees.router)
 app.include_router(purchases.router)
+app.include_router(audit.router)
 
 # Настройка CORS (если нужно)
 if os.getenv("DEBUG", "False").lower() == "true":
@@ -187,6 +189,10 @@ async def login_page(request: Request):
 @app.get("/settings", response_class=HTMLResponse)
 async def settings_page(request: Request):
     return templates.TemplateResponse("settings.html", {"request": request})
+
+@app.get("/audit", response_class=HTMLResponse)
+async def audit_page(request: Request):
+    return templates.TemplateResponse("audit.html", {"request": request})
 
 # Обработчик 404 ошибки
 @app.exception_handler(404)
