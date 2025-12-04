@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>📦 Панель управления ({{ employee_login }})</title>
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -151,6 +152,208 @@
             color: #858796;
             font-size: 0.85em;
         }
+        
+        .overview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .overview-item {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            transition: transform 0.3s ease;
+        }
+        
+        .overview-item:hover {
+            transform: translateY(-3px);
+        }
+        
+        .overview-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            background: #dc3545;
+        }
+        
+        .overview-icon.success { background: #28a745; }
+        .overview-icon.info { background: #17a2b8; }
+        .overview-icon.primary { background: linear-gradient(45deg, #6a11cb, #2575fc); }
+        
+        .overview-icon i {
+            color: white;
+            font-size: 1.5em;
+        }
+        
+        .overview-title {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .overview-value {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 3px;
+        }
+        
+        .overview-desc {
+            font-size: 0.8em;
+            color: #888;
+        }
+        
+        .quick-actions {
+            margin-top: 30px;
+        }
+        
+        .quick-actions h4 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .action-btn {
+            padding: 12px 20px;
+            background: linear-gradient(45deg, #6a11cb, #2575fc);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .charts-section {
+            margin-top: 30px;
+        }
+        
+        .chart-tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #eee;
+        }
+        
+        .tab-btn {
+            padding: 12px 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .tab-btn.active {
+            color: #6a11cb;
+            border-bottom-color: #6a11cb;
+        }
+        
+        .chart-panel {
+            display: none;
+            padding: 20px 0;
+        }
+        
+        .chart-panel.active {
+            display: block;
+        }
+        
+        .chart-panel h4 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .chart-bars {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .chart-bar {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .bar-label {
+            min-width: 120px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .bar-container {
+            flex: 1;
+            height: 25px;
+            background: #f1f1f1;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .bar-fill {
+            height: 100%;
+            background: linear-gradient(45deg, #6a11cb, #2575fc);
+            border-radius: 12px;
+            transition: width 1s ease;
+        }
+        
+        .bar-value {
+            min-width: 60px;
+            text-align: right;
+            font-weight: 600;
+            color: #666;
+        }
+        
+        .chart-pie {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .pie-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .pie-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+        }
+        
+        .pie-label {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .pie-value {
+            color: #666;
+        }
     </style>
     <script>
         async function logout() {
@@ -174,6 +377,182 @@
             localStorage.removeItem('employee_id');
             window.location.href = '/login';
         }
+        
+        async function loadOverviewData() {
+            try {
+                // Загружаем товары для анализа
+                const productsResp = await fetch('/api/products/');
+                if (productsResp.ok) {
+                    const products = await productsResp.json();
+                    
+                    // Критические остатки (меньше 5)
+                    const criticalStock = products.filter(p => p.stock_quantity && p.stock_quantity < 5).length;
+                    document.getElementById('critical-stock').textContent = criticalStock;
+                    
+                    // Общая стоимость товаров
+                    const totalValue = products.reduce((sum, p) => {
+                        return sum + (p.price * p.stock_quantity || 0);
+                    }, 0);
+                    document.getElementById('total-value').textContent = totalValue.toLocaleString('ru-RU') + ' ₽';
+                }
+                
+                // Загружаем заказы
+                const ordersResp = await fetch('/api/orders/');
+                if (ordersResp.ok) {
+                    const orders = await ordersResp.json();
+                    const today = new Date().toDateString();
+                    const todayOrders = orders.filter(o => {
+                        const orderDate = new Date(o.order_date).toDateString();
+                        return orderDate === today;
+                    }).length;
+                    document.getElementById('today-orders').textContent = todayOrders;
+                }
+                
+                // Загружаем клиентов
+                const customersResp = await fetch('/api/customers/');
+                if (customersResp.ok) {
+                    const customers = await customersResp.json();
+                    const thirtyDaysAgo = new Date();
+                    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+                    
+                    const newCustomers = customers.filter(c => {
+                        const regDate = new Date(c.registration_date || c.created_at);
+                        return regDate >= thirtyDaysAgo;
+                    }).length;
+                    document.getElementById('new-customers').textContent = newCustomers;
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки данных обзора:', error);
+            }
+        }
+        
+        function showChart(chartType) {
+            // Скрываем все панели
+            document.querySelectorAll('.chart-panel').forEach(panel => {
+                panel.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Показываем выбранную
+            document.getElementById(chartType + '-chart').classList.add('active');
+            event.target.classList.add('active');
+            
+            // Загружаем данные для графика
+            loadChartData(chartType);
+        }
+        
+        async function loadChartData(chartType) {
+            try {
+                if (chartType === 'stock') {
+                    const productsResp = await fetch('/api/products/');
+                    if (productsResp.ok) {
+                        const products = await productsResp.json();
+                        renderStockChart(products);
+                    }
+                } else if (chartType === 'orders') {
+                    const ordersResp = await fetch('/api/orders/');
+                    if (ordersResp.ok) {
+                        const orders = await ordersResp.json();
+                        renderOrdersChart(orders);
+                    }
+                } else if (chartType === 'categories') {
+                    const [productsResp, categoriesResp] = await Promise.all([
+                        fetch('/api/products/'),
+                        fetch('/api/categories/')
+                    ]);
+                    if (productsResp.ok && categoriesResp.ok) {
+                        const products = await productsResp.json();
+                        const categories = await categoriesResp.json();
+                        renderCategoriesChart(products, categories);
+                    }
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки графика:', error);
+            }
+        }
+        
+        function renderStockChart(products) {
+            const stockLevels = {
+                'Критически мало (< 5)': products.filter(p => p.stock_quantity < 5).length,
+                'Мало (5-15)': products.filter(p => p.stock_quantity >= 5 && p.stock_quantity < 15).length,
+                'Нормально (15-50)': products.filter(p => p.stock_quantity >= 15 && p.stock_quantity < 50).length,
+                'Много (50+)': products.filter(p => p.stock_quantity >= 50).length
+            };
+            
+            const maxValue = Math.max(...Object.values(stockLevels));
+            const container = document.getElementById('stock-bars');
+            container.innerHTML = '';
+            
+            Object.entries(stockLevels).forEach(([label, value]) => {
+                const barDiv = document.createElement('div');
+                barDiv.className = 'chart-bar';
+                barDiv.innerHTML = `
+                    <div class="bar-label">${label}</div>
+                    <div class="bar-container">
+                        <div class="bar-fill" style="width: ${maxValue > 0 ? (value / maxValue) * 100 : 0}%"></div>
+                    </div>
+                    <div class="bar-value">${value}</div>
+                `;
+                container.appendChild(barDiv);
+            });
+        }
+        
+        function renderOrdersChart(orders) {
+            const statusCounts = {};
+            orders.forEach(order => {
+                const status = order.status || 'Неизвестно';
+                statusCounts[status] = (statusCounts[status] || 0) + 1;
+            });
+            
+            const colors = ['#6a11cb', '#2575fc', '#28a745', '#ffc107', '#dc3545'];
+            const container = document.getElementById('orders-pie');
+            container.innerHTML = '';
+            
+            Object.entries(statusCounts).forEach(([status, count], index) => {
+                const pieDiv = document.createElement('div');
+                pieDiv.className = 'pie-item';
+                pieDiv.innerHTML = `
+                    <div class="pie-color" style="background: ${colors[index % colors.length]}"></div>
+                    <div class="pie-label">${status}</div>
+                    <div class="pie-value">${count}</div>
+                `;
+                container.appendChild(pieDiv);
+            });
+        }
+        
+        function renderCategoriesChart(products, categories) {
+            const categoryCounts = {};
+            
+            categories.forEach(cat => {
+                const count = products.filter(p => p.category_id === cat.category_id).length;
+                categoryCounts[cat.category_name] = count;
+            });
+            
+            const maxValue = Math.max(...Object.values(categoryCounts));
+            const container = document.getElementById('category-bars');
+            container.innerHTML = '';
+            
+            Object.entries(categoryCounts).forEach(([category, count]) => {
+                const barDiv = document.createElement('div');
+                barDiv.className = 'chart-bar';
+                barDiv.innerHTML = `
+                    <div class="bar-label">${category}</div>
+                    <div class="bar-container">
+                        <div class="bar-fill" style="width: ${maxValue > 0 ? (count / maxValue) * 100 : 0}%"></div>
+                    </div>
+                    <div class="bar-value">${count}</div>
+                `;
+                container.appendChild(barDiv);
+            });
+        }
+        
+        // Загружаем данные при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            loadOverviewData();
+            loadChartData('stock'); // Загружаем первый график
+        });
     </script>
 </head>
 <body>
@@ -214,7 +593,77 @@
             <div class="card-header">
                 <i class="fas fa-chart-line"></i> Обзор системы
             </div>
-            <p>Здесь будут отображаться ключевые метрики и графики.</p>
+            
+            <div class="overview-grid">
+                <div class="overview-item">
+                    <div class="overview-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="overview-content">
+                        <div class="overview-title">Критические остатки</div>
+                        <div class="overview-value" id="critical-stock">0</div>
+                        <div class="overview-desc">Товаров меньше 5 шт.</div>
+                    </div>
+                </div>
+                
+                <div class="overview-item">
+                    <div class="overview-icon success">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <div class="overview-content">
+                        <div class="overview-title">Заказы сегодня</div>
+                        <div class="overview-value" id="today-orders">0</div>
+                        <div class="overview-desc">Новых заказов</div>
+                    </div>
+                </div>
+                
+                <div class="overview-item">
+                    <div class="overview-icon info">
+                        <i class="fas fa-ruble-sign"></i>
+                    </div>
+                    <div class="overview-content">
+                        <div class="overview-title">Общая стоимость</div>
+                        <div class="overview-value" id="total-value">0 ₽</div>
+                        <div class="overview-desc">Всех товаров на складе</div>
+                    </div>
+                </div>
+                
+                <div class="overview-item">
+                    <div class="overview-icon primary">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="overview-content">
+                        <div class="overview-title">Новые клиенты</div>
+                        <div class="overview-value" id="new-customers">0</div>
+                        <div class="overview-desc">За последние 30 дней</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="charts-section">
+                <div class="chart-tabs">
+                    <button class="tab-btn active" onclick="showChart('stock')">Остатки товаров</button>
+                    <button class="tab-btn" onclick="showChart('orders')">Статистика заказов</button>
+                    <button class="tab-btn" onclick="showChart('categories')">Категории товаров</button>
+                </div>
+                
+                <div class="chart-content">
+                    <div id="stock-chart" class="chart-panel active">
+                        <h4>Распределение остатков</h4>
+                        <div class="chart-bars" id="stock-bars"></div>
+                    </div>
+                    
+                    <div id="orders-chart" class="chart-panel">
+                        <h4>Заказы по статусам</h4>
+                        <div class="chart-pie" id="orders-pie"></div>
+                    </div>
+                    
+                    <div id="categories-chart" class="chart-panel">
+                        <h4>Товары по категориям</h4>
+                        <div class="chart-bars" id="category-bars"></div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </body>
