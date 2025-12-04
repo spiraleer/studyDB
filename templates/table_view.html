@@ -300,6 +300,9 @@
                     <button onclick="refreshTable()" class="btn btn-secondary">
                         <i class="fas fa-sync-alt"></i> Обновить
                     </button>
+                    <button onclick="exportToCSV()" class="btn btn-success">
+                        <i class="fas fa-download"></i> Экспорт CSV
+                    </button>
                     {% if table_name == 'user_session' %}
                     <button onclick="clearAllSessions()" class="btn btn-danger">
                         <i class="fas fa-trash-alt"></i> Очистить все сессии
@@ -1267,6 +1270,44 @@
             } catch (error) {
                 alert('Ошибка соединения');
             }
+        }
+        
+        // Экспорт в CSV
+        function exportToCSV() {
+            const table = document.getElementById('products-table');
+            const rows = table.querySelectorAll('tr');
+            let csvContent = '';
+            
+            rows.forEach((row, index) => {
+                const cells = row.querySelectorAll(index === 0 ? 'th' : 'td');
+                const rowData = [];
+                
+                cells.forEach((cell, cellIndex) => {
+                    // Пропускаем последнюю колонку (Действия)
+                    if (cellIndex < cells.length - 1) {
+                        let cellText = cell.textContent.trim();
+                        // Экранируем запятые и кавычки
+                        if (cellText.includes(',') || cellText.includes('"')) {
+                            cellText = '"' + cellText.replace(/"/g, '""') + '"';
+                        }
+                        rowData.push(cellText);
+                    }
+                });
+                
+                csvContent += rowData.join(',') + '\n';
+            });
+            
+            // Создаем и скачиваем файл с BOM для UTF-8
+            const BOM = '\uFEFF';
+            const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `${__INIT_DATA.table_name}_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
         
         // Очистить все сессии
