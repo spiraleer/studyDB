@@ -5,7 +5,7 @@ from typing import List
 from datetime import date, datetime
 from pydantic import BaseModel
 from models.database import get_db
-from models.tables import Purchase, PurchaseItem, Product, Supplier, Employee
+from models.tables import Purchase, PurchaseItem, Product, Supplier, Employee, StockMovement
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
 from reportlab.pdfgen import canvas
@@ -124,6 +124,19 @@ def create_purchase(purchase: PurchaseCreate, db: Session = Depends(get_db)):
             unit_price=item.unit_price
         )
         db.add(new_item)
+        
+        # Если статус "delivered", создаём движение товара
+        if purchase.status == "delivered":
+            movement = StockMovement(
+                product_id=item.product_id,
+                movement_type="incoming",
+                quantity=item.quantity,
+                reference_id=new_purchase.purchase_id,
+                reference_type="purchase",
+                employee_id=purchase.employee_id,
+                notes=f"Закупка #{new_purchase.purchase_id}"
+            )
+            db.add(movement)
     
     db.commit()
     db.refresh(new_purchase)
@@ -150,13 +163,21 @@ def update_purchase(purchase_id: int, purchase: PurchaseUpdate, db: Session = De
     if purchase.notes is not None:
         db_purchase.notes = purchase.notes
     
-    # Увеличиваем остатки при смене статуса на "delivered"
+    # Создаём записи о движении при смене статуса на "delivered"
     if purchase.status == "delivered" and old_status != "delivered":
         items = db.query(PurchaseItem).filter(PurchaseItem.purchase_id == purchase_id).all()
         for item in items:
-            product = db.query(Product).filter(Product.product_id == item.product_id).first()
-            if product:
-                product.stock_quantity += item.quantity
+            # Триггер БД автоматически увеличит stock_quantity
+            movement = StockMovement(
+                product_id=item.product_id,
+                movement_type="incoming",
+                quantity=item.quantity,
+                reference_id=purchase_id,
+                reference_type="purchase",
+                employee_id=db_purchase.employee_id,
+                notes=f"Закупка #{purchase_id}"
+            )
+            db.add(movement)
     
     db.commit()
     return {"message": "Purchase updated"}

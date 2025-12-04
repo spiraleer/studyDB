@@ -19,6 +19,7 @@ from routes import purchases
 from routes import audit
 from routes import payments
 from routes import price_history
+from routes import stock_movements
 
 # Импортируем функции для работы с БД
 from models.database import check_database_connection, get_db, create_tables, engine
@@ -48,6 +49,7 @@ app.include_router(purchases.router)
 app.include_router(audit.router)
 app.include_router(payments.router)
 app.include_router(price_history.router)
+app.include_router(stock_movements.router)
 
 # Настройка CORS (если нужно)
 if os.getenv("DEBUG", "False").lower() == "true":

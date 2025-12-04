@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 from models.database import get_db
-from models.tables import Orders, OrderItem, Product, Customer
+from models.tables import Orders, OrderItem, Product, Customer, StockMovement
 from dependencies import require_permission
 from core.permissions import PermissionCode
 from datetime import datetime
@@ -29,7 +29,7 @@ async def create_order(
     order = Orders(
         customer_id=order_data.get("customer_id"),
         total_amount=Decimal(str(order_data.get("total_amount", 0))),
-        status="Принят",
+        status=order_data.get("status", "Принят"),
         employee_id=current_user.employee_id,
         discount_percent=Decimal(str(order_data.get("discount_percent", 0))),
         payment_type=order_data.get("payment_type"),
@@ -49,6 +49,18 @@ async def create_order(
             item_discount=Decimal(str(item.get("item_discount", 0)))
         )
         db.add(order_item)
+        
+        # Создаём запись о движении (триггер БД автоматически обновит stock_quantity)
+        movement = StockMovement(
+            product_id=item["product_id"],
+            movement_type="outgoing",
+            quantity=item["quantity"],
+            reference_id=order.order_id,
+            reference_type="order",
+            employee_id=current_user.employee_id,
+            notes=f"Заказ #{order.order_id}"
+        )
+        db.add(movement)
     
     db.commit()
     return {"message": "Заказ создан", "order_id": order.order_id}

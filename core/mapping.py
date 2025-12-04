@@ -107,6 +107,11 @@ COLUMN_NAMES_MAPPING = {
     "loyalty_card_number": "Номер карты лояльности",
     "registration_date": "Дата регистрации",
     "notes": "Примечания",
+    "movement_id": "ID Движения",
+    "movement_type": "Тип движения",
+    "movement_date": "Дата движения",
+    "reference_id": "ID Ссылки",
+    "reference_type": "Тип ссылки",
 }
 
 # Маппинг таблиц на иконки Font Awesome
