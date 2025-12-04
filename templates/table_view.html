@@ -59,6 +59,26 @@
             overflow-x: auto;
             max-width: 100%;
             margin-top: 20px;
+            -webkit-overflow-scrolling: touch;
+            scroll-behavior: smooth;
+        }
+        
+        .data-table-container::-webkit-scrollbar {
+            height: 8px;
+        }
+        
+        .data-table-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        
+        .data-table-container::-webkit-scrollbar-thumb {
+            background: #6a11cb;
+            border-radius: 4px;
+        }
+        
+        .data-table-container::-webkit-scrollbar-thumb:hover {
+            background: #2575fc;
         }
 
         .data-table {
@@ -87,10 +107,11 @@
         }
 
         .data-table td {
-            white-space: nowrap;
-            max-width: 200px;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            white-space: normal;
+            word-wrap: break-word;
+            max-width: 300px;
+            padding: 12px 15px;
+            vertical-align: top;
         }
 
         .info-bar {
@@ -981,6 +1002,11 @@
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') closeModal();
         });
+        
+        // Предотвращаем случайные запросы при прокрутке
+        document.addEventListener('scroll', function(e) {
+            e.stopPropagation();
+        }, { passive: true });
 
         // Функции для работы с заказами
         let orderProducts = [];
@@ -1320,9 +1346,7 @@
             const deleteCancelBtn = document.getElementById('delete-cancel-btn');
             if (deleteCancelBtn) deleteCancelBtn.addEventListener('click', closeDeleteModal);
 
-            // Attach deleted-toggle handler (defensive: also present as inline onclick)
-            const deletedToggleBtn = document.getElementById('deleted-toggle-btn');
-            if (deletedToggleBtn) deletedToggleBtn.addEventListener('click', function(e){ e.preventDefault(); toggleDeletedMenu(); });
+
 
             // Initialize appropriate features depending on table
             // Обработчик формы поставщиков
@@ -1504,26 +1528,14 @@
             
             if (__INIT_DATA.is_product) {
                 loadCategories();
-                refreshTable();
-                try { loadDeletedProducts(); } catch (e) {}
             } else if (__INIT_DATA.is_category) {
-                refreshTable();
             } else {
                 console.log('Таблица:', __INIT_DATA.table_name, 'не имеет API для обновления');
             }
         });
 
         // Defensive binder: attach click handler to deleted-toggle button immediately and retry if not present
-        (function bindDeletedToggle(retries = 10) {
-            const btn = document.getElementById('deleted-toggle-btn');
-            if (btn) {
-                // avoid double-binding
-                try { btn.removeEventListener && btn.removeEventListener('click', toggleDeletedMenu); } catch (e) {}
-                btn.addEventListener('click', function(e) { e.preventDefault(); toggleDeletedMenu(); });
-                return;
-            }
-            if (retries > 0) setTimeout(() => bindDeletedToggle(retries - 1), 150);
-        })();
+
     </script>
     <!-- Universal delete confirmation modal -->
     <div id="delete-modal" class="modal">
