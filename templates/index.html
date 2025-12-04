@@ -269,20 +269,28 @@
         <h3><i class="fas fa-heartbeat"></i> Статус системы</h3>
         <div class="status-grid">
           <div class="status-item">
-            <div class="status-label">Статус приложения</div>
-            <div id="app-status" class="status-value good">Проверка...</div>
-          </div>
-          <div class="status-item">
             <div class="status-label">База данных</div>
             <div id="db-status" class="status-value warning">Проверка...</div>
           </div>
           <div class="status-item">
-            <div class="status-label">Таблиц в БД</div>
-            <div id="tables-count" class="status-value">17</div>
+            <div class="status-label">Количество товаров</div>
+            <div id="products-count" class="status-value">Проверка...</div>
           </div>
           <div class="status-item">
-            <div class="status-label">Режим работы</div>
-            <div id="mode-status" class="status-value">Разработка</div>
+            <div class="status-label">Количество заказов</div>
+            <div id="orders-count" class="status-value">Проверка...</div>
+          </div>
+          <div class="status-item">
+            <div class="status-label">Количество клиентов</div>
+            <div id="customers-count" class="status-value">Проверка...</div>
+          </div>
+          <div class="status-item">
+            <div class="status-label">Количество сотрудников</div>
+            <div id="employees-count" class="status-value">Проверка...</div>
+          </div>
+          <div class="status-item">
+            <div class="status-label">Низкие остатки</div>
+            <div id="low-stock-count" class="status-value warning">Проверка...</div>
           </div>
         </div>
       </div>
@@ -300,6 +308,9 @@
       </div>
 
       <div class="footer">
+        <p style="background: linear-gradient(45deg, #6a11cb, #2575fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-weight: 700; font-size: 16px; margin-bottom: 8px;">
+          ❤️ БД ЛБ-07 6 группа ❤️
+        </p>
         <p>Система управления складом v1.0.0</p>
         <p id="server-time"></p>
       </div>
@@ -324,64 +335,89 @@
 
       // Проверка статуса системы
       async function checkSystemStatus() {
-        const appStatus = document.getElementById("app-status");
         const dbStatus = document.getElementById("db-status");
-        const tablesCount = document.getElementById("tables-count");
-        const modeStatus = document.getElementById("mode-status");
-
-        appStatus.textContent = "Проверка...";
-        appStatus.className = "status-value warning";
+        const productsCount = document.getElementById("products-count");
+        const ordersCount = document.getElementById("orders-count");
+        const customersCount = document.getElementById("customers-count");
+        const employeesCount = document.getElementById("employees-count");
+        const lowStockCount = document.getElementById("low-stock-count");
 
         try {
-          // Проверяем статус приложения
+          // Проверяем статус БД
           const healthResponse = await fetch("/health");
           const healthData = await healthResponse.json();
 
-          if (healthData.status === "healthy") {
-            appStatus.textContent = "✅ Работает";
-            appStatus.className = "status-value good";
-
-            // Обновляем информацию о БД
-            if (healthData.database && healthData.database.connected) {
-              dbStatus.textContent = "✅ Подключена";
-              dbStatus.className = "status-value good";
-            }
+          if (healthData.database && healthData.database.connected) {
+            dbStatus.textContent = "✅ Подключена";
+            dbStatus.className = "status-value good";
+            
+            // Получаем статистику
+            await loadStatistics();
           } else {
-            appStatus.textContent = "❌ Ошибка";
-            appStatus.className = "status-value error";
-          }
-
-          // Получаем количество таблиц
-          try {
-            const tablesResponse = await fetch("/api/check-tables");
-            if (tablesResponse.ok) {
-              const tablesData = await tablesResponse.json();
-              tablesCount.textContent = tablesData.total_tables;
-            }
-          } catch (tablesError) {
-            console.log("Не удалось получить количество таблиц");
-          }
-
-          // Получаем режим работы
-          try {
-            const configResponse = await fetch("/api/config");
-            if (configResponse.ok) {
-              const configData = await configResponse.json();
-              if (configData.environment === "development") {
-                modeStatus.textContent = "Разработка";
-              } else if (configData.environment === "production") {
-                modeStatus.textContent = "Рабочий";
-              }
-            }
-          } catch (configError) {
-            modeStatus.textContent = "Неизвестно";
+            dbStatus.textContent = "❌ Не доступна";
+            dbStatus.className = "status-value error";
           }
         } catch (error) {
-          appStatus.textContent = "❌ Ошибка подключения";
-          appStatus.className = "status-value error";
-          dbStatus.textContent = "❌ Не доступна";
+          dbStatus.textContent = "❌ Ошибка";
           dbStatus.className = "status-value error";
           console.log("Ошибка при проверке статуса:", error);
+        }
+      }
+      
+      async function loadStatistics() {
+        const productsCount = document.getElementById("products-count");
+        const ordersCount = document.getElementById("orders-count");
+        const customersCount = document.getElementById("customers-count");
+        const employeesCount = document.getElementById("employees-count");
+        const lowStockCount = document.getElementById("low-stock-count");
+        
+        // Количество товаров
+        try {
+          const productsResp = await fetch('/api/products/');
+          if (productsResp.ok) {
+            const products = await productsResp.json();
+            productsCount.textContent = products.length;
+            
+            // Подсчитываем товары с низкими остатками
+            const lowStock = products.filter(p => p.stock_quantity && p.stock_quantity < 15).length;
+            lowStockCount.textContent = lowStock;
+            lowStockCount.className = lowStock > 0 ? "status-value warning" : "status-value good";
+          }
+        } catch (e) {
+          productsCount.textContent = "Ошибка";
+        }
+        
+        // Количество заказов
+        try {
+          const ordersResp = await fetch('/api/orders/');
+          if (ordersResp.ok) {
+            const orders = await ordersResp.json();
+            ordersCount.textContent = orders.length;
+          }
+        } catch (e) {
+          ordersCount.textContent = "Ошибка";
+        }
+        
+        // Количество клиентов
+        try {
+          const customersResp = await fetch('/api/customers/');
+          if (customersResp.ok) {
+            const customers = await customersResp.json();
+            customersCount.textContent = customers.length;
+          }
+        } catch (e) {
+          customersCount.textContent = "Ошибка";
+        }
+        
+        // Количество сотрудников
+        try {
+          const employeesResp = await fetch('/api/employees/count');
+          if (employeesResp.ok) {
+            const employeesData = await employeesResp.json();
+            employeesCount.textContent = employeesData.count;
+          }
+        } catch (e) {
+          employeesCount.textContent = "Ошибка";
         }
       }
 
