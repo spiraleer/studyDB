@@ -100,6 +100,30 @@
             color: #333;
             text-transform: uppercase;
             font-weight: 700;
+            cursor: pointer;
+            position: relative;
+            user-select: none;
+        }
+        
+        .data-table th:hover {
+            background-color: #e9ecef;
+        }
+        
+        .data-table th.sortable::after {
+            content: '\2195';
+            position: absolute;
+            right: 8px;
+            opacity: 0.5;
+        }
+        
+        .data-table th.sort-asc::after {
+            content: '\2191';
+            opacity: 1;
+        }
+        
+        .data-table th.sort-desc::after {
+            content: '\2193';
+            opacity: 1;
         }
 
         .data-table tr:nth-child(even) {
@@ -1272,6 +1296,71 @@
             }
         }
         
+        // Сортировка таблицы
+        let currentSort = { column: null, direction: 'asc' };
+        let tableData = [];
+        
+        function initSorting() {
+            const headers = document.querySelectorAll('.data-table th');
+            headers.forEach((header, index) => {
+                // Не делаем последнюю колонку (Действия) сортируемой
+                if (index < headers.length - 1) {
+                    header.classList.add('sortable');
+                    header.addEventListener('click', () => sortTable(index));
+                }
+            });
+        }
+        
+        function sortTable(columnIndex) {
+            const table = document.getElementById('products-table');
+            const tbody = table.querySelector('tbody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            
+            // Определяем направление сортировки
+            if (currentSort.column === columnIndex) {
+                currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSort.column = columnIndex;
+                currentSort.direction = 'asc';
+            }
+            
+            // Сортируем строки
+            rows.sort((a, b) => {
+                const aValue = a.cells[columnIndex].textContent.trim();
+                const bValue = b.cells[columnIndex].textContent.trim();
+                
+                // Проверяем, являются ли значения числами
+                const aNum = parseFloat(aValue.replace(/[^\d.-]/g, ''));
+                const bNum = parseFloat(bValue.replace(/[^\d.-]/g, ''));
+                
+                let comparison = 0;
+                if (!isNaN(aNum) && !isNaN(bNum)) {
+                    comparison = aNum - bNum;
+                } else {
+                    comparison = aValue.localeCompare(bValue, 'ru');
+                }
+                
+                return currentSort.direction === 'asc' ? comparison : -comparison;
+            });
+            
+            // Обновляем визуальные индикаторы
+            updateSortIndicators(columnIndex);
+            
+            // Перестраиваем таблицу
+            tbody.innerHTML = '';
+            rows.forEach(row => tbody.appendChild(row));
+        }
+        
+        function updateSortIndicators(activeColumn) {
+            const headers = document.querySelectorAll('.data-table th');
+            headers.forEach((header, index) => {
+                header.classList.remove('sort-asc', 'sort-desc');
+                if (index === activeColumn) {
+                    header.classList.add(currentSort.direction === 'asc' ? 'sort-asc' : 'sort-desc');
+                }
+            });
+        }
+        
         // Экспорт в CSV
         function exportToCSV() {
             const table = document.getElementById('products-table');
@@ -1573,6 +1662,9 @@
             } else {
                 console.log('Таблица:', __INIT_DATA.table_name, 'не имеет API для обновления');
             }
+            
+            // Инициализируем сортировку
+            initSorting();
         });
 
         // Defensive binder: attach click handler to deleted-toggle button immediately and retry if not present
