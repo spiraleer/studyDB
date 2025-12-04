@@ -298,6 +298,11 @@
                                     {% endif %}
                                 {% elif col_name == 'price' %}
                                     {{ "%.2f"|format(row[col_name]) }} ₽
+                                {% elif col_name == 'stock_quantity' %}
+                                    {{ row[col_name] }}
+                                    {% if row[col_name] and row[col_name] < 15 %}
+                                        <span style="color: #dc3545; font-weight: bold; margin-left: 5px;">⚠️ Мало</span>
+                                    {% endif %}
                                 {% else %}
                                     {{ row[col_name] }}
                                 {% endif %}
@@ -844,6 +849,16 @@
                     } else if (col === 'is_active') {
                         td.textContent = value ? '✅ Активен' : '❌ Неактивен';
                         td.className = value ? 'status-active' : 'status-inactive';
+                    } else if (col === 'stock_quantity') {
+                        td.textContent = value || '';
+                        if (value && value < 15) {
+                            const warning = document.createElement('span');
+                            warning.style.color = '#dc3545';
+                            warning.style.fontWeight = 'bold';
+                            warning.style.marginLeft = '5px';
+                            warning.textContent = '⚠️ Мало';
+                            td.appendChild(warning);
+                        }
                     } else if (value === null || value === undefined) {
                         td.textContent = '';
                     } else {
