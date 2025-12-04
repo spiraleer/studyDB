@@ -24,6 +24,7 @@ async def get_products(
     category_id: Optional[int] = None,
     supplier_id: Optional[int] = None,
     active_only: bool = True,
+    search: Optional[str] = None,
     db: Session = Depends(get_db),
     current_user: Employee = Depends(require_permission(PermissionCode.PRODUCTS_VIEW))
 ):
@@ -32,10 +33,6 @@ async def get_products(
     """
     query = select(Product)
     
-    # active_only controls filtering explicitly:
-    # - True  => only active products
-    # - False => only inactive products
-    # - None  => no filter (all products)
     if active_only is True:
         query = query.where(Product.is_active == True)
     elif active_only is False:
@@ -46,6 +43,14 @@ async def get_products(
     
     if supplier_id:
         query = query.where(Product.supplier_id == supplier_id)
+    
+    if search:
+        search_filter = f"%{search}%"
+        query = query.where(
+            (Product.product_name.ilike(search_filter)) |
+            (Product.description.ilike(search_filter)) |
+            (Product.barcode.ilike(search_filter))
+        )
     
     query = query.offset(skip).limit(limit)
     

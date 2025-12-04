@@ -140,23 +140,100 @@
             vertical-align: top;
         }
 
-        .info-bar {
-            background: #e9ecef;
-            padding: 10px 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            color: #495057;
+        .table-header {
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            padding: 20px 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            border: 1px solid #e3e6f0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
         }
 
-        /* Кнопки действий */
-        .table-actions {
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .header-actions {
             display: flex;
             gap: 10px;
-            margin-bottom: 20px;
+            flex-wrap: wrap;
         }
+
+        .info-badge {
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(106,17,203,0.2);
+        }
+
+        .search-box {
+            position: relative;
+            flex: 1;
+            max-width: 400px;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+            pointer-events: none;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 10px 15px 10px 45px;
+            border: 2px solid #e3e6f0;
+            border-radius: 25px;
+            font-size: 14px;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #6a11cb;
+            box-shadow: 0 0 0 4px rgba(106,17,203,0.1);
+        }
+
+        .btn-icon {
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            background: white;
+            border: 2px solid #e3e6f0;
+            color: #6a11cb;
+            transition: all 0.3s;
+        }
+
+        .btn-icon:hover {
+            background: #6a11cb;
+            color: white;
+            border-color: #6a11cb;
+            transform: translateY(-2px);
+        }
+
+
 
         .btn {
             padding: 10px 20px;
@@ -357,13 +434,18 @@
                 <i class="fas fa-boxes"></i> Управление {{ russian_table_name }}
             </h1>
 
-            <div class="info-bar">
-                <div>
-                    <i class="fas fa-info-circle"></i> 
-                    Отображено: <span id="display-count">{{ data|length }}</span> из 
-                    <span id="total-rows">{{ total_rows }}</span> записей
+            <div class="table-header">
+                <div class="header-left">
+                    <div class="info-badge">
+                        <i class="fas fa-database"></i>
+                        <span id="display-count">{{ data|length }}</span> / <span id="total-rows">{{ total_rows }}</span>
+                    </div>
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="search-input" placeholder="Поиск по таблице..." onkeyup="searchTable()">
+                    </div>
                 </div>
-                <div class="table-actions">
+                <div class="header-actions">
                     {% if table_name == 'product' %}
                     <button onclick="showCreateForm()" class="btn btn-success">
                         <i class="fas fa-plus"></i> Добавить товар
@@ -393,15 +475,15 @@
                         <i class="fas fa-plus"></i> Создать закупку
                     </button>
                     {% endif %}
-                    <button onclick="refreshTable()" class="btn btn-secondary">
-                        <i class="fas fa-sync-alt"></i> Обновить
+                    <button onclick="refreshTable()" class="btn btn-icon" title="Обновить">
+                        <i class="fas fa-sync-alt"></i>
                     </button>
-                    <button onclick="exportToCSV()" class="btn btn-success">
-                        <i class="fas fa-download"></i> Экспорт CSV
+                    <button onclick="exportToCSV()" class="btn btn-icon" title="Экспорт CSV">
+                        <i class="fas fa-download"></i>
                     </button>
                     {% if table_name == 'user_session' %}
                     <button onclick="clearAllSessions()" class="btn btn-danger">
-                        <i class="fas fa-trash-alt"></i> Очистить все сессии
+                        <i class="fas fa-trash-alt"></i> Очистить сессии
                     </button>
                     {% endif %}
                 </div>
@@ -1444,6 +1526,42 @@
                     header.classList.add(currentSort.direction === 'asc' ? 'sort-asc' : 'sort-desc');
                 }
             });
+        }
+        
+        // Поиск по таблице
+        function searchTable() {
+            const input = document.getElementById('search-input');
+            const filter = input.value.toLowerCase();
+            const table = document.getElementById('products-table');
+            const tbody = table.querySelector('tbody');
+            const rows = tbody.getElementsByTagName('tr');
+            let visibleCount = 0;
+
+            for (let i = 0; i < rows.length; i++) {
+                const row = rows[i];
+                const cells = row.getElementsByTagName('td');
+                let found = false;
+
+                for (let j = 0; j < cells.length - 1; j++) {
+                    const cell = cells[j];
+                    if (cell) {
+                        const textValue = cell.textContent || cell.innerText;
+                        if (textValue.toLowerCase().indexOf(filter) > -1) {
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (found) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            }
+
+            document.getElementById('display-count').textContent = visibleCount;
         }
         
         // Экспорт в CSV
