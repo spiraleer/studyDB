@@ -60,84 +60,124 @@
         .data-table-container {
             overflow-x: auto;
             max-width: 100%;
-            margin-top: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            background: white;
             -webkit-overflow-scrolling: touch;
-            scroll-behavior: smooth;
         }
         
         .data-table-container::-webkit-scrollbar {
-            height: 8px;
+            height: 10px;
         }
         
         .data-table-container::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 4px;
+            background: #f8f9fa;
+            border-radius: 10px;
         }
         
         .data-table-container::-webkit-scrollbar-thumb {
-            background: #6a11cb;
-            border-radius: 4px;
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            border-radius: 10px;
         }
         
         .data-table-container::-webkit-scrollbar-thumb:hover {
-            background: #2575fc;
+            background: linear-gradient(135deg, #2575fc, #6a11cb);
         }
 
         .data-table {
             width: 100%;
-            border-collapse: collapse;
+            border-collapse: separate;
+            border-spacing: 0;
             font-size: 0.9em;
             min-width: 1000px;
         }
 
         .data-table th,
         .data-table td {
-            padding: 12px 15px;
+            padding: 16px 20px;
             text-align: left;
-            border-bottom: 1px solid #ddd;
+        }
+
+        .data-table thead {
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
 
         .data-table th {
-            background-color: #f1f1f1;
-            color: #333;
-            text-transform: uppercase;
+            color: white;
             font-weight: 700;
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
             cursor: pointer;
             position: relative;
             user-select: none;
+            border: none;
+        }
+
+        .data-table th:first-child {
+            border-radius: 15px 0 0 0;
+        }
+
+        .data-table th:last-child {
+            border-radius: 0 15px 0 0;
         }
         
         .data-table th:hover {
-            background-color: #e9ecef;
+            background: rgba(255,255,255,0.1);
         }
         
         .data-table th.sortable::after {
-            content: '\2195';
+            content: '⇅';
             position: absolute;
             right: 8px;
-            opacity: 0.5;
+            opacity: 0.6;
+            font-size: 14px;
         }
         
         .data-table th.sort-asc::after {
-            content: '\2191';
+            content: '↑';
             opacity: 1;
         }
         
         .data-table th.sort-desc::after {
-            content: '\2193';
+            content: '↓';
             opacity: 1;
         }
 
-        .data-table tr:nth-child(even) {
-            background-color: #f9f9f9;
+        .data-table tbody tr {
+            transition: all 0.2s;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .data-table tbody tr:hover {
+            background: linear-gradient(90deg, rgba(106,17,203,0.05), rgba(37,117,252,0.05));
+            transform: scale(1.01);
+            box-shadow: 0 2px 8px rgba(106,17,203,0.1);
+        }
+
+        .data-table tbody tr:nth-child(even) {
+            background-color: #fafbfc;
+        }
+
+        .data-table tbody tr:nth-child(even):hover {
+            background: linear-gradient(90deg, rgba(106,17,203,0.05), rgba(37,117,252,0.05));
         }
 
         .data-table td {
+            color: #495057;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 250px;
+            border: none;
+        }
+
+        .data-table td:hover {
             white-space: normal;
-            word-wrap: break-word;
-            max-width: 300px;
-            padding: 12px 15px;
-            vertical-align: top;
+            overflow: visible;
         }
 
         .table-header {
@@ -279,10 +319,30 @@
         }
 
         .btn-small {
-            padding: 6px 12px;
+            padding: 8px 12px;
             font-size: 0.85em;
-            margin: 0 3px;
+            margin: 0 4px;
             border-radius: 8px;
+            min-width: 36px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .btn-small:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #ffc107, #ffb300);
+            border: none;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            border: none;
         }
 
         /* Модальное окно */
@@ -411,15 +471,54 @@
             resize: vertical;
         }
 
-        /* Статус товара */
         .status-active {
-            color: #28a745;
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+            color: #155724;
+            padding: 6px 14px;
+            border-radius: 20px;
             font-weight: 600;
+            font-size: 0.85em;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-active::before {
+            content: '✓';
+            background: #28a745;
+            color: white;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
         }
 
         .status-inactive {
-            color: #dc3545;
+            background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+            color: #721c24;
+            padding: 6px 14px;
+            border-radius: 20px;
             font-weight: 600;
+            font-size: 0.85em;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-inactive::before {
+            content: '✕';
+            background: #dc3545;
+            color: white;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
         }
     </style>
 </head>
@@ -474,6 +573,10 @@
                     <button onclick="showCreatePurchaseForm()" class="btn btn-success">
                         <i class="fas fa-plus"></i> Создать закупку
                     </button>
+                    {% elif table_name == 'payment' %}
+                    <button onclick="showCreatePaymentForm()" class="btn btn-success">
+                        <i class="fas fa-plus"></i> Добавить платеж
+                    </button>
                     {% endif %}
                     <button onclick="refreshTable()" class="btn btn-icon" title="Обновить">
                         <i class="fas fa-sync-alt"></i>
@@ -522,12 +625,12 @@
                                 {% endif %}
                             </td>
                             {% endfor %}
-                            <td>
+                            <td style="white-space: nowrap;">
                                 {% if table_name == 'product' %}
-                                <button onclick="editProduct({{ row.product_id }})" class="btn btn-warning btn-small">
+                                <button onclick="editProduct({{ row.product_id }})" class="btn btn-warning btn-small" title="Редактировать">
                                     <i class="fas fa-edit"></i>
                                 </button>
-                                <button onclick="deleteProduct({{ row.product_id }})" class="btn btn-danger btn-small">
+                                <button onclick="deleteProduct({{ row.product_id }})" class="btn btn-danger btn-small" title="Удалить">
                                     <i class="fas fa-trash"></i>
                                 </button>
                                 {% elif table_name == 'category' %}
@@ -556,10 +659,23 @@
                                     <i class="fas fa-trash"></i>
                                 </button>
                                 {% elif table_name == 'purchase' %}
-                                <button onclick="editPurchase({{ row.purchase_id }})" class="btn btn-warning btn-small">
+                                <button onclick="downloadPurchasePDF({{ row.purchase_id }})" class="btn btn-success btn-small" title="Скачать PDF">
+                                    <i class="fas fa-file-pdf"></i>
+                                </button>
+                                <button onclick="editPurchase({{ row.purchase_id }})" class="btn btn-warning btn-small" title="Редактировать">
                                     <i class="fas fa-edit"></i>
                                 </button>
-                                <button onclick="deletePurchase({{ row.purchase_id }})" class="btn btn-danger btn-small">
+                                <button onclick="deletePurchase({{ row.purchase_id }})" class="btn btn-danger btn-small" title="Удалить">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                {% elif table_name == 'payment' %}
+                                <button onclick="downloadPaymentPDF({{ row.payment_id }})" class="btn btn-success btn-small" title="Скачать чек">
+                                    <i class="fas fa-receipt"></i>
+                                </button>
+                                <button onclick="editPayment({{ row.payment_id }})" class="btn btn-warning btn-small" title="Редактировать">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button onclick="deletePayment({{ row.payment_id }})" class="btn btn-danger btn-small" title="Удалить">
                                     <i class="fas fa-trash"></i>
                                 </button>
                                 {% endif %}
@@ -1175,6 +1291,8 @@
             if (supplierModal) supplierModal.style.display = 'none';
             const purchaseModal = document.getElementById('purchase-modal');
             if (purchaseModal) purchaseModal.style.display = 'none';
+            const paymentModal = document.getElementById('payment-modal');
+            if (paymentModal) paymentModal.style.display = 'none';
         }
 
         // Закрытие модального окна при клике вне его
@@ -1184,7 +1302,8 @@
             const orderModal = document.getElementById('order-modal');
             const deleteModal = document.getElementById('delete-modal');
             const purchaseModal = document.getElementById('purchase-modal');
-            if (event.target === productModal || event.target === categoryModal || event.target === orderModal || event.target === purchaseModal) {
+            const paymentModal = document.getElementById('payment-modal');
+            if (event.target === productModal || event.target === categoryModal || event.target === orderModal || event.target === purchaseModal || event.target === paymentModal) {
                 closeModal();
             }
             if (event.target === deleteModal) {
@@ -1691,6 +1810,82 @@
             }
         }
         
+        function downloadPurchasePDF(purchaseId) {
+            window.open(`/api/purchases/${purchaseId}/pdf`, '_blank');
+        }
+        
+        // Payment functions
+        let paymentOrders = [];
+        
+        async function showCreatePaymentForm() {
+            document.getElementById('payment-modal-title').textContent = 'Добавить платеж';
+            document.getElementById('payment-form').reset();
+            document.getElementById('payment-id').value = '';
+            document.getElementById('payment-status').value = 'Оплачено';
+            await loadPaymentOrders();
+            document.getElementById('payment-modal').style.display = 'flex';
+        }
+        
+        async function editPayment(paymentId) {
+            try {
+                await loadPaymentOrders();
+                const response = await fetch(`/api/payments/${paymentId}`);
+                if (response.ok) {
+                    const payment = await response.json();
+                    document.getElementById('payment-modal-title').textContent = 'Редактировать платеж';
+                    document.getElementById('payment-id').value = payment.payment_id;
+                    document.getElementById('payment-order').value = payment.order_id || '';
+                    document.getElementById('payment-amount').value = payment.amount;
+                    document.getElementById('payment-type').value = payment.payment_type;
+                    document.getElementById('payment-status').value = payment.payment_status;
+                    document.getElementById('payment-receipt').value = payment.receipt_number || '';
+                    document.getElementById('payment-notes').value = payment.notes || '';
+                    document.getElementById('payment-modal').style.display = 'flex';
+                }
+            } catch (error) {
+                alert('Ошибка загрузки платежа');
+            }
+        }
+        
+        async function deletePayment(paymentId) {
+            if (!confirm('Удалить платеж?')) return;
+            try {
+                const response = await fetch(`/api/payments/${paymentId}`, { method: 'DELETE' });
+                if (response.ok) {
+                    alert('Платеж удален');
+                    refreshTable();
+                } else {
+                    const error = await response.json();
+                    alert('Ошибка: ' + (error.detail || 'Неизвестная ошибка'));
+                }
+            } catch (error) {
+                alert('Ошибка соединения');
+            }
+        }
+        
+        async function loadPaymentOrders() {
+            try {
+                const response = await fetch('/api/payments/orders/list');
+                if (response.ok) {
+                    paymentOrders = await response.json();
+                    const select = document.getElementById('payment-order');
+                    select.innerHTML = '<option value="">Выберите заказ</option>';
+                    paymentOrders.forEach(order => {
+                        const option = document.createElement('option');
+                        option.value = order.order_id;
+                        option.textContent = `${order.order_code} - ${order.total_amount} ₽`;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки заказов:', error);
+            }
+        }
+        
+        function downloadPaymentPDF(paymentId) {
+            window.open(`/api/payments/${paymentId}/pdf`, '_blank');
+        }
+        
         async function loadPurchaseData() {
             try {
                 const [suppliersResp, productsResp] = await Promise.all([
@@ -1849,6 +2044,47 @@
 
 
             // Initialize appropriate features depending on table
+            // Обработчик формы платежей
+            const paymentFormEl = document.getElementById('payment-form');
+            if (paymentFormEl) {
+                paymentFormEl.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    const paymentId = document.getElementById('payment-id').value;
+                    const isEdit = !!paymentId;
+                    
+                    const paymentData = {
+                        order_id: parseInt(document.getElementById('payment-order').value),
+                        amount: parseFloat(document.getElementById('payment-amount').value),
+                        payment_type: document.getElementById('payment-type').value,
+                        payment_status: document.getElementById('payment-status').value,
+                        employee_id: parseInt(localStorage.getItem('employee_id') || '1'),
+                        receipt_number: document.getElementById('payment-receipt').value || undefined,
+                        notes: document.getElementById('payment-notes').value || undefined
+                    };
+                    
+                    try {
+                        const url = isEdit ? `/api/payments/${paymentId}` : '/api/payments/';
+                        const method = isEdit ? 'PUT' : 'POST';
+                        const response = await fetch(url, {
+                            method: method,
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(paymentData)
+                        });
+                        
+                        if (response.ok) {
+                            alert(isEdit ? 'Платеж обновлен' : 'Платеж создан');
+                            closeModal();
+                            refreshTable();
+                        } else {
+                            const error = await response.json();
+                            alert('Ошибка: ' + (error.detail || 'Неизвестная ошибка'));
+                        }
+                    } catch (error) {
+                        alert('Ошибка соединения');
+                    }
+                });
+            }
+            
             // Обработчик формы закупок
             const purchaseFormEl = document.getElementById('purchase-form');
             if (purchaseFormEl) {
@@ -2336,6 +2572,62 @@
             </div>
             <div class="modal-footer">
                 <button type="submit" form="supplier-form" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Сохранить
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">Отмена</button>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if table_name == 'payment' %}
+    <div id="payment-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="payment-modal-title">Добавить платеж</h3>
+                <button class="close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+            <form id="payment-form">
+                <input type="hidden" id="payment-id">
+                <div class="form-group">
+                    <label for="payment-order">Заказ *</label>
+                    <select id="payment-order" required>
+                        <option value="">Выберите заказ</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="payment-amount">Сумма *</label>
+                    <input type="number" id="payment-amount" step="0.01" min="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="payment-type">Тип оплаты *</label>
+                    <select id="payment-type" required>
+                        <option value="cash">Наличные</option>
+                        <option value="card">Карта</option>
+                        <option value="online">Онлайн</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="payment-status">Статус *</label>
+                    <select id="payment-status" required>
+                        <option value="Оплачено">Оплачено</option>
+                        <option value="В ожидании">В ожидании</option>
+                        <option value="Отменено">Отменено</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="payment-receipt">Номер чека</label>
+                    <input type="text" id="payment-receipt">
+                </div>
+                <div class="form-group">
+                    <label for="payment-notes">Примечания</label>
+                    <textarea id="payment-notes" rows="2"></textarea>
+                </div>
+            </form>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" form="payment-form" class="btn btn-primary">
                     <i class="fas fa-save"></i> Сохранить
                 </button>
                 <button type="button" class="btn btn-secondary" onclick="closeModal()">Отмена</button>

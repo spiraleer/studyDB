@@ -17,6 +17,7 @@ from routes import suppliers
 from routes import employees
 from routes import purchases
 from routes import audit
+from routes import payments
 
 # Импортируем функции для работы с БД
 from models.database import check_database_connection, get_db, create_tables, engine
@@ -44,6 +45,7 @@ app.include_router(suppliers.router)
 app.include_router(employees.router)
 app.include_router(purchases.router)
 app.include_router(audit.router)
+app.include_router(payments.router)
 
 # Настройка CORS (если нужно)
 if os.getenv("DEBUG", "False").lower() == "true":
