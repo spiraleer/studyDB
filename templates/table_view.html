@@ -322,6 +322,10 @@
                     <button onclick="showCreateSupplierForm()" class="btn btn-success">
                         <i class="fas fa-plus"></i> Добавить поставщика
                     </button>
+                    {% elif table_name == 'purchase' %}
+                    <button onclick="showCreatePurchaseForm()" class="btn btn-success">
+                        <i class="fas fa-plus"></i> Создать закупку
+                    </button>
                     {% endif %}
                     <button onclick="refreshTable()" class="btn btn-secondary">
                         <i class="fas fa-sync-alt"></i> Обновить
@@ -401,6 +405,13 @@
                                     <i class="fas fa-edit"></i>
                                 </button>
                                 <button onclick="deleteSupplier({{ row.supplier_id }})" class="btn btn-danger btn-small">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                {% elif table_name == 'purchase' %}
+                                <button onclick="editPurchase({{ row.purchase_id }})" class="btn btn-warning btn-small">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button onclick="deletePurchase({{ row.purchase_id }})" class="btn btn-danger btn-small">
                                     <i class="fas fa-trash"></i>
                                 </button>
                                 {% endif %}
@@ -1011,6 +1022,8 @@
             if (customerModal) customerModal.style.display = 'none';
             const supplierModal = document.getElementById('supplier-modal');
             if (supplierModal) supplierModal.style.display = 'none';
+            const purchaseModal = document.getElementById('purchase-modal');
+            if (purchaseModal) purchaseModal.style.display = 'none';
         }
 
         // Закрытие модального окна при клике вне его
@@ -1019,7 +1032,8 @@
             const categoryModal = document.getElementById('category-modal');
             const orderModal = document.getElementById('order-modal');
             const deleteModal = document.getElementById('delete-modal');
-            if (event.target === productModal || event.target === categoryModal || event.target === orderModal) {
+            const purchaseModal = document.getElementById('purchase-modal');
+            if (event.target === productModal || event.target === categoryModal || event.target === orderModal || event.target === purchaseModal) {
                 closeModal();
             }
             if (event.target === deleteModal) {
@@ -1422,6 +1436,173 @@
             }
         }
 
+        // Purchase functions
+        let purchaseItems = [];
+        let purchaseSuppliers = [];
+        let purchaseProducts = [];
+        
+        async function showCreatePurchaseForm() {
+            document.getElementById('purchase-modal-title').textContent = 'Создать закупку';
+            document.getElementById('purchase-form').reset();
+            document.getElementById('purchase-id').value = '';
+            document.getElementById('purchase-date').valueAsDate = new Date();
+            document.getElementById('purchase-status').value = 'ordered';
+            await loadPurchaseData();
+            purchaseItems = [];
+            updatePurchaseItemsDisplay();
+            updatePurchaseTotal();
+            document.getElementById('purchase-modal').style.display = 'flex';
+        }
+        
+        async function editPurchase(purchaseId) {
+            try {
+                await loadPurchaseData();
+                const response = await fetch(`/api/purchases/${purchaseId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    const purchase = data.purchase;
+                    const items = data.items;
+                    
+                    document.getElementById('purchase-modal-title').textContent = 'Редактировать закупку';
+                    document.getElementById('purchase-id').value = purchase.purchase_id;
+                    document.getElementById('purchase-date').value = purchase.purchase_date;
+                    document.getElementById('purchase-supplier').value = purchase.supplier_id || '';
+                    document.getElementById('purchase-status').value = purchase.status || 'ordered';
+                    document.getElementById('purchase-delivery-date').value = purchase.delivery_date || '';
+                    document.getElementById('purchase-invoice').value = purchase.invoice_number || '';
+                    document.getElementById('purchase-notes').value = purchase.notes || '';
+                    
+                    purchaseItems = items.map(item => ({
+                        id: Date.now() + Math.random(),
+                        product_id: item.product_id,
+                        quantity: item.quantity,
+                        unit_price: parseFloat(item.unit_price)
+                    }));
+                    
+                    updatePurchaseItemsDisplay();
+                    updatePurchaseTotal();
+                    document.getElementById('purchase-modal').style.display = 'flex';
+                }
+            } catch (error) {
+                alert('Ошибка загрузки закупки');
+            }
+        }
+        
+        async function deletePurchase(purchaseId) {
+            if (!confirm('Удалить закупку?')) return;
+            try {
+                const response = await fetch(`/api/purchases/${purchaseId}`, { method: 'DELETE' });
+                if (response.ok) {
+                    alert('Закупка удалена');
+                    refreshTable();
+                } else {
+                    const error = await response.json();
+                    alert('Ошибка: ' + (error.detail || 'Неизвестная ошибка'));
+                }
+            } catch (error) {
+                alert('Ошибка соединения');
+            }
+        }
+        
+        async function loadPurchaseData() {
+            try {
+                const [suppliersResp, productsResp] = await Promise.all([
+                    fetch('/api/purchases/suppliers/list'),
+                    fetch('/api/purchases/products/list')
+                ]);
+                
+                if (suppliersResp.ok) {
+                    purchaseSuppliers = await suppliersResp.json();
+                    const select = document.getElementById('purchase-supplier');
+                    select.innerHTML = '<option value="">Выберите поставщика</option>';
+                    purchaseSuppliers.forEach(supplier => {
+                        const option = document.createElement('option');
+                        option.value = supplier.supplier_id;
+                        option.textContent = supplier.company_name;
+                        select.appendChild(option);
+                    });
+                }
+                
+                if (productsResp.ok) {
+                    purchaseProducts = await productsResp.json();
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки данных:', error);
+            }
+        }
+        
+        function addPurchaseItem() {
+            const itemId = Date.now();
+            purchaseItems.push({ id: itemId, product_id: null, quantity: 1, unit_price: 0 });
+            updatePurchaseItemsDisplay();
+        }
+        
+        function removePurchaseItem(itemId) {
+            purchaseItems = purchaseItems.filter(item => item.id !== itemId);
+            updatePurchaseItemsDisplay();
+            updatePurchaseTotal();
+        }
+        
+        function updatePurchaseItemsDisplay() {
+            const container = document.getElementById('purchase-items');
+            container.innerHTML = '';
+            
+            purchaseItems.forEach(item => {
+                const div = document.createElement('div');
+                div.style.cssText = 'border: 1px solid #ddd; padding: 10px; margin: 10px 0; border-radius: 5px;';
+                div.innerHTML = `
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <select onchange="updatePurchaseItem(${item.id}, 'product_id', this.value)" style="flex: 2;">
+                            <option value="">Выберите товар</option>
+                            ${purchaseProducts.map(p => `<option value="${p.product_id}" ${p.product_id == item.product_id ? 'selected' : ''}>${p.product_name} - ${p.price} ₽</option>`).join('')}
+                        </select>
+                        <input type="number" placeholder="Кол-во" min="1" value="${item.quantity}" 
+                               onchange="updatePurchaseItem(${item.id}, 'quantity', this.value)" style="width: 100px;">
+                        <input type="number" placeholder="Цена" step="0.01" value="${item.unit_price}" 
+                               onchange="updatePurchaseItem(${item.id}, 'unit_price', this.value)" style="width: 120px;">
+                        <button type="button" onclick="removePurchaseItem(${item.id})" class="btn btn-danger btn-small">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+        
+        function updatePurchaseItem(itemId, field, value) {
+            const item = purchaseItems.find(i => i.id === itemId);
+            if (item) {
+                item[field] = field === 'product_id' ? parseInt(value) : parseFloat(value) || 0;
+                if (field === 'product_id' && value) {
+                    const product = purchaseProducts.find(p => p.product_id === parseInt(value));
+                    if (product && item.unit_price === 0) {
+                        item.unit_price = parseFloat(product.price);
+                        updatePurchaseItemsDisplay();
+                    }
+                }
+                updatePurchaseTotal();
+            }
+        }
+        
+        function updatePurchaseTotal() {
+            let total = 0;
+            purchaseItems.forEach(item => {
+                if (item.product_id && item.quantity && item.unit_price) {
+                    total += item.quantity * item.unit_price;
+                }
+            });
+            document.getElementById('purchase-total').textContent = total.toFixed(2);
+        }
+        
+        function validateDeliveryDate() {
+            const purchaseDate = document.getElementById('purchase-date').value;
+            const deliveryDate = document.getElementById('purchase-delivery-date').value;
+            if (purchaseDate && deliveryDate && deliveryDate < purchaseDate) {
+                alert('Дата доставки не может быть раньше даты закупки');
+                document.getElementById('purchase-delivery-date').value = purchaseDate;
+            }
+        }
+        
         // Инициализация при загрузке страницы
         document.addEventListener('DOMContentLoaded', function() {
             // Attach category form handler if it exists
@@ -1481,6 +1662,68 @@
 
 
             // Initialize appropriate features depending on table
+            // Обработчик формы закупок
+            const purchaseFormEl = document.getElementById('purchase-form');
+            if (purchaseFormEl) {
+                purchaseFormEl.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    const purchaseId = document.getElementById('purchase-id').value;
+                    const isEdit = !!purchaseId;
+                    
+                    if (purchaseItems.length === 0) {
+                        alert('Добавьте хотя бы один товар');
+                        return;
+                    }
+                    
+                    const validItems = purchaseItems.filter(item => item.product_id && item.quantity > 0 && item.unit_price > 0);
+                    if (validItems.length === 0) {
+                        alert('Заполните все поля товаров');
+                        return;
+                    }
+                    
+                    const deliveryDate = document.getElementById('purchase-delivery-date').value;
+                    const invoiceNum = document.getElementById('purchase-invoice').value;
+                    const notesVal = document.getElementById('purchase-notes').value;
+                    
+                    const purchaseData = {
+                        purchase_date: document.getElementById('purchase-date').value,
+                        supplier_id: parseInt(document.getElementById('purchase-supplier').value),
+                        employee_id: parseInt(localStorage.getItem('employee_id') || '1'),
+                        status: document.getElementById('purchase-status').value,
+                        items: validItems.map(item => ({
+                            product_id: item.product_id,
+                            quantity: item.quantity,
+                            unit_price: item.unit_price
+                        }))
+                    };
+                    
+                    if (deliveryDate) purchaseData.delivery_date = deliveryDate;
+                    if (invoiceNum) purchaseData.invoice_number = invoiceNum;
+                    if (notesVal) purchaseData.notes = notesVal;
+                    
+                    try {
+                        const url = isEdit ? `/api/purchases/${purchaseId}` : '/api/purchases/';
+                        const method = isEdit ? 'PUT' : 'POST';
+                        const response = await fetch(url, {
+                            method: method,
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(purchaseData)
+                        });
+                        
+                        if (response.ok) {
+                            alert(isEdit ? 'Закупка обновлена' : 'Закупка создана');
+                            closeModal();
+                            refreshTable();
+                        } else {
+                            const error = await response.json();
+                            alert('Ошибка: ' + (error.detail || 'Неизвестная ошибка'));
+                        }
+                    } catch (error) {
+                        alert('Ошибка соединения');
+                    }
+                });
+            }
+            
             // Обработчик формы поставщиков
             const supplierFormEl = document.getElementById('supplier-form');
             if (supplierFormEl) {
@@ -1906,6 +2149,63 @@
         </div>
     </div>
     {% endif %}
+    
+    {% if table_name == 'purchase' %}
+    <div id="purchase-modal" class="modal">
+        <div class="modal-content" style="max-width: 900px;">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h3 id="purchase-modal-title">Создать закупку</h3>
+            <form id="purchase-form">
+                <input type="hidden" id="purchase-id">
+                <div class="form-group">
+                    <label for="purchase-date">Дата закупки *</label>
+                    <input type="date" id="purchase-date" required onchange="validateDeliveryDate()">
+                </div>
+                <div class="form-group">
+                    <label for="purchase-supplier">Поставщик *</label>
+                    <select id="purchase-supplier" required>
+                        <option value="">Выберите поставщика</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="purchase-status">Статус</label>
+                    <select id="purchase-status">
+                        <option value="ordered">Заказано</option>
+                        <option value="delivered">Доставлено</option>
+                        <option value="cancelled">Отменено</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="purchase-delivery-date">Дата доставки</label>
+                    <input type="date" id="purchase-delivery-date" onchange="validateDeliveryDate()">
+                </div>
+                <div class="form-group">
+                    <label for="purchase-invoice">Номер счета</label>
+                    <input type="text" id="purchase-invoice">
+                </div>
+                <div class="form-group">
+                    <label for="purchase-notes">Примечания</label>
+                    <textarea id="purchase-notes" rows="2"></textarea>
+                </div>
+                <h4>Товары в закупке</h4>
+                <button type="button" onclick="addPurchaseItem()" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Добавить товар
+                </button>
+                <div id="purchase-items" style="margin-top: 15px;"></div>
+                <div class="form-group" style="margin-top: 20px;">
+                    <strong>Итого: <span id="purchase-total">0.00</span> ₽</strong>
+                </div>
+                <div class="form-actions" style="margin-top: 20px;">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Сохранить
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Отмена</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+    
     <script src="/static/theme-switcher.js"></script>
 </body>
 </html>
