@@ -16,3 +16,5 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
         return password_hash.hex() == stored_hash
     except ValueError:
         return False
+
+get_password_hash = hash_password

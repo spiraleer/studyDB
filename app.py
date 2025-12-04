@@ -184,6 +184,10 @@ async def login_page(request: Request):
     """
     return templates.TemplateResponse("login.html", {"request": request})
 
+@app.get("/settings", response_class=HTMLResponse)
+async def settings_page(request: Request):
+    return templates.TemplateResponse("settings.html", {"request": request})
+
 # Обработчик 404 ошибки
 @app.exception_handler(404)
 async def not_found_exception_handler(request: Request, exc):

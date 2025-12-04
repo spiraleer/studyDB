@@ -3,16 +3,26 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
-from sqlalchemy import select # <--- Важно: используем select
+from sqlalchemy import select
+from pydantic import BaseModel
 
 from models.database import get_db
 from models.tables import Employee, UserSession
 from core.sessions import generate_session_token
-from core.security import verify_password
+from core.security import verify_password, get_password_hash
 from dependencies import require_permission
 from core.permissions import PermissionCode
 from datetime import datetime
+
+templates = Jinja2Templates(directory="templates")
+
+class ChangePasswordRequest(BaseModel):
+    employee_id: int
+    current_password: str
+    new_password: str
 
 # Инициализируем роутер
 router = APIRouter(
@@ -111,3 +121,16 @@ async def clear_all_sessions(
     db.query(UserSession).delete()
     db.commit()
     return {"message": "Все сессии удалены"}
+
+@router.post("/change-password")
+async def change_password(request: ChangePasswordRequest, db: Session = Depends(get_db)):
+    employee = db.query(Employee).filter(Employee.employee_id == request.employee_id).first()
+    if not employee:
+        raise HTTPException(status_code=404, detail="Employee not found")
+    
+    if not verify_password(request.current_password, employee.password_hash):
+        raise HTTPException(status_code=400, detail="Incorrect current password")
+    
+    employee.password_hash = get_password_hash(request.new_password)
+    db.commit()
+    return {"message": "Password changed successfully"}
